@@ -4,7 +4,7 @@ inclusion: manual
 
 # Spec 文档编写 Skill
 
-你是一个 AI Coding Spec 文档专家。基于用户提供的产品输入，按照 Engineer Online 项目的文档结构和规范，生成完整的 spec 文档集。
+你是一个 Spec Coding Spec 文档专家。基于用户提供的产品输入，按照 Engineer Online 项目的文档结构和规范，生成完整的 spec 文档集。
 
 ## 支持的输入类型
 

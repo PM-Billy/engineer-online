@@ -1,6 +1,6 @@
-# Engineer Online — AI Coding 需求输入规范文档集
+# Engineer Online — Spec Coding 需求输入规范文档集
 
-> **用途**：本文档集作为标准化的 AI Coding 需求输入，包含完整的 PRD、技术架构、UI 规范、任务清单与可复用的角色 Prompt 模板。
+> **用途**：本文档集作为标准化的 Spec Coding 需求输入，包含完整的 PRD、技术架构、UI 规范、任务清单与可复用的角色 Prompt 模板。
 > **目标**：让 AI 编码助手能精确理解需求并生成高质量代码；让产品经理输出结构统一的 PRD；让开发者快速理解需求并进入 spec coding。
 > **版本**：2.2.0（详见 [CHANGELOG.md](CHANGELOG.md)）
 > **维护人**：Billy
@@ -46,19 +46,10 @@ engineer-online/
 │   └── 部署设计.md                      物理部署 + 容量规划 + 上线 Checklist
 │
 ├── tasks/                             ← 任务级规范（L4，按天变化）
-│   ├── 任务清单.md                      开发任务清单（含 AI Coding 分配建议）
+│   ├── 任务清单.md                      开发任务清单（含 Spec Coding 分配建议）
 │   └── 追溯矩阵.csv                    BR → EX → AC → 任务 → API 全链路追溯（SSOT）
 │
-├── prompts/                           ← 角色 Prompt 模板
-│   ├── README.md                       Prompt 索引与使用通则
-│   ├── Flutter页面.md                  Flutter 原生页面（5.2/5.3/5.5/5.6）
-│   ├── H5详情页.md                     H5 详情页生成（仅 5.4）
-│   ├── 管理后台页面.md                  运营管理后台页面生成（5.1/5.7/5.8/5.9）
-│   ├── 后端接口与服务.md                后端 Controller + Service 生成
-│   ├── 数据库设计.md                   数据库 Schema 生成
-│   ├── 测试用例.md                     测试用例生成
-│   ├── API模拟数据.md                  API Mock 数据集生成
-│   └── 工程初始化.md                   工程脚手架初始化
+├── .kiro/skills/                       ← Kiro Skills（7 个角色模板）
 │
 ├── asset/                             ← 所有图片与资源
 │   ├── architecture/                   架构图
@@ -79,7 +70,7 @@ engineer-online/
 |------|---------|------|
 | 接到开发任务的成员 | `tasks/任务清单.md` | 找到任务编号、输入文档、依赖和验收标准 |
 | 产品 / 项目成员 | `requirement/00-需求总览.md` | 先理解产品边界、角色、流程、全局规则 |
-| 具体开发角色 | `prompts/README.md` | 按 Flutter / H5 / 后端 / 测试 / 后台选择对应 Prompt |
+| 具体开发角色 | `.kiro/skills/` | 在 Kiro 聊天中输入 `#` 选择对应角色 Skill |
 | AI 编码助手 | `spec-index.yaml` | 一次读入建立全局模块索引 |
 
 ---
@@ -95,25 +86,27 @@ engineer-online/
 | 5 | `standard/技术架构.md` | 查项目级技术栈、接口规范、错误码、安全与性能要求 |
 | 6 | `standard/UI设计规范.md` | 前端任务补看页面模板、组件规格、Design Token |
 | 7 | `requirement/多语言文本.md` | 前端任务补看 UI 文案和 i18n key |
-| 8 | `prompts/README.md` | 选择角色对应的 Prompt 模板，整理输入后交给 AI |
+| 8 | `.kiro/skills/` | 在 Kiro 中用 `#flutter-dev` 等 Skill 触发 AI 生成代码 |
 | 9 | `tasks/追溯矩阵.csv` | 改需求或补规则时定位影响范围 |
 
 ---
 
-## 🤖 AI Coding 使用方式
+## 🤖 Spec Coding 使用方式
 
-### 角色式 Prompt（推荐）
+### Skill 驱动（推荐）
 
-```
-请按 `prompts/Flutter页面.md` 的指引，为模块 5.2（圈子首页）生成 Flutter 原生页面代码。
-```
+在 Kiro 聊天中输入 `#` 选择对应角色 Skill：
 
 ```
-请按 `prompts/H5详情页.md` 的指引，为模块 5.4（问题详情）生成 H5 详情页代码。
+#flutter-dev 请完成任务 QLIST-04（首页页面）
 ```
 
 ```
-请按 `prompts/后端接口与服务.md` 的指引，为模块 5.3（问题发布）实现 Spring Boot Controller + Service。
+#h5-dev 请完成任务 QDETAIL-05（详情页）
+```
+
+```
+#backend-dev 请完成任务 QPOST-02（问题创建 API）
 ```
 
 ### 通用 Prompt 模板
@@ -160,7 +153,7 @@ PRD Traceability → 支持 → 变更影响分析
 
 ### 仓库性质
 
-本仓库是 **Engineer Online 产品的文档与规范仓库**，用于存放 AI Coding PRD 模板集。仓库中**没有可编译的代码、没有包管理器、没有测试**。内容包括产品需求文档、技术设计方案、任务清单以及供 AI 生成代码时使用的 Prompt 模板。实际的代码开发在其它仓库中进行。
+本仓库是 **Engineer Online 产品的文档与规范仓库**，用于存放 Spec Coding PRD 模板集。仓库中**没有可编译的代码、没有包管理器、没有测试**。内容包括产品需求文档、技术设计方案、任务清单以及供 AI 生成代码时使用的 Prompt 模板。实际的代码开发在其它仓库中进行。
 
 ### 文档分层
 

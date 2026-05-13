@@ -899,7 +899,7 @@ if (theme?.primaryColor) {
 
 ---
 
-## 9. AI Coding 组件生成指令
+## 9. Spec Coding 组件生成指令
 
 ### 9.1 生成问题卡片
 

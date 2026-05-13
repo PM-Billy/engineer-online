@@ -11,7 +11,7 @@ modules:
     path: "requirement/modules/05.01-圈子管理(管理后台).md"
     layer: "platform"
     tech: "Vue 3 + Ant Design Vue"
-    prompt: "prompts/管理后台页面.md"
+    skill: ".kiro/skills/admin-dev.md"
     entities: ["Group", "GroupTranslation"]
     priority: "P0"
     depends_on: []
@@ -22,7 +22,7 @@ modules:
     path: "requirement/modules/05.02-圈子首页.md"
     layer: "engineer-online"
     tech: "Flutter"
-    prompt: "prompts/Flutter页面.md"
+    skill: ".kiro/skills/flutter-dev.md"
     entities: ["Question"]
     priority: "P0"
     depends_on: ["5.1"]
@@ -33,7 +33,7 @@ modules:
     path: "requirement/modules/05.03-问题发布.md"
     layer: "engineer-online"
     tech: "Flutter"
-    prompt: "prompts/Flutter页面.md"
+    skill: ".kiro/skills/flutter-dev.md"
     entities: ["Question"]
     priority: "P0"
     depends_on: ["5.1", "5.2"]
@@ -44,7 +44,7 @@ modules:
     path: "requirement/modules/05.04-问题详情.md"
     layer: "engineer-online"
     tech: "H5 WebView (Vue 3 + NuxtJS + Vant)"
-    prompt: "prompts/H5详情页.md"
+    skill: ".kiro/skills/h5-dev.md"
     entities: ["Question", "Answer", "Vote"]
     priority: "P0"
     depends_on: ["5.2", "5.3"]
@@ -55,7 +55,7 @@ modules:
     path: "requirement/modules/05.05-搜索.md"
     layer: "engineer-online"
     tech: "Flutter"
-    prompt: "prompts/Flutter页面.md"
+    skill: ".kiro/skills/flutter-dev.md"
     entities: ["Question"]
     priority: "P1"
     depends_on: ["5.2"]
@@ -66,7 +66,7 @@ modules:
     path: "requirement/modules/05.06-消息通知.md"
     layer: "engineer-online"
     tech: "Flutter"
-    prompt: "prompts/Flutter页面.md"
+    skill: ".kiro/skills/flutter-dev.md"
     entities: ["Notification"]
     priority: "P1"
     depends_on: ["5.4"]
@@ -77,7 +77,7 @@ modules:
     path: "requirement/modules/05.07-问题管理（管理后台）.md"
     layer: "platform"
     tech: "Vue 3 + Ant Design Vue"
-    prompt: "prompts/管理后台页面.md"
+    skill: ".kiro/skills/admin-dev.md"
     entities: ["Question", "AuditLog"]
     priority: "P0"
     depends_on: ["5.1", "5.2"]
@@ -88,7 +88,7 @@ modules:
     path: "requirement/modules/05.08-回答管理（管理后台）.md"
     layer: "platform"
     tech: "Vue 3 + Ant Design Vue"
-    prompt: "prompts/管理后台页面.md"
+    skill: ".kiro/skills/admin-dev.md"
     entities: ["Answer", "AuditLog"]
     priority: "P0"
     depends_on: ["5.1", "5.4", "5.7"]
@@ -99,7 +99,7 @@ modules:
     path: "requirement/modules/05.09-用户管理（管理后台）.md"
     layer: "platform"
     tech: "Vue 3 + Ant Design Vue"
-    prompt: "prompts/管理后台页面.md"
+    skill: ".kiro/skills/admin-dev.md"
     entities: ["User"]
     priority: "P0"
     depends_on: ["5.1"]
@@ -128,28 +128,25 @@ plan:
 
 tasks: "tasks/任务清单.md"
 
-prompts:
-  - name: "Flutter页面"
-    path: "prompts/Flutter页面.md"
+skills:
+  - name: "flutter-dev"
+    path: ".kiro/skills/flutter-dev.md"
     modules: ["5.2", "5.3", "5.5", "5.6"]
-  - name: "H5详情页"
-    path: "prompts/H5详情页.md"
+  - name: "h5-dev"
+    path: ".kiro/skills/h5-dev.md"
     modules: ["5.4"]
-  - name: "管理后台页面"
-    path: "prompts/管理后台页面.md"
+  - name: "admin-dev"
+    path: ".kiro/skills/admin-dev.md"
     modules: ["5.1", "5.7", "5.8", "5.9"]
-  - name: "后端接口与服务"
-    path: "prompts/后端接口与服务.md"
+  - name: "backend-dev"
+    path: ".kiro/skills/backend-dev.md"
     modules: ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9"]
-  - name: "数据库设计"
-    path: "prompts/数据库设计.md"
+  - name: "db-design"
+    path: ".kiro/skills/db-design.md"
     modules: ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9"]
-  - name: "测试用例"
-    path: "prompts/测试用例.md"
+  - name: "test-qa"
+    path: ".kiro/skills/test-qa.md"
     modules: ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9"]
-  - name: "API模拟数据"
-    path: "prompts/API模拟数据.md"
-    modules: ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9"]
-  - name: "工程初始化"
-    path: "prompts/工程初始化.md"
+  - name: "spec-writer"
+    path: ".kiro/skills/spec-writer.md"
     modules: []
