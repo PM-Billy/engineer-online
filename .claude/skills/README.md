@@ -12,6 +12,7 @@
 | `backend-dev` | Java 后端 | 全部 | `/backend-dev 完成任务 QPOST-02` |
 | `db-design` | 数据库设计 | 全部 | `/db-design 完成任务 GROUP-01` |
 | `test-qa` | 测试 | 全部 | `/test-qa 完成任务 TEST-02` |
+| `spec-writer` | Spec 文档编写 | 新模块/新功能 | `/spec-writer 为圈子管理编写 spec` |
 
 ## 使用方式
 
