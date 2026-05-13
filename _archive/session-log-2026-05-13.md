@@ -23,6 +23,8 @@ previous_session: "session-log-2026-05-12.md"
 | 8 | design/ 文件重命名 + UI设计.md 创建 | 结构 | design/ |
 | 9 | Kiro Skills 创建（7 个） | 新增 | .kiro/skills/ |
 | 10 | CLAUDE.md 重建 | 新增 | 根目录 |
+| 11 | index/ 目录移除，spec-index.yaml 移到根目录 | 结构精简 | 根目录 |
+| 12 | Git 初始化 + 推送到 GitHub | 版本控制 | 全局 |
 
 ---
 
@@ -196,6 +198,26 @@ scripts/
 
 ---
 
+## 11. index/ 目录移除
+
+- `index/spec-index.yaml` → 根目录 `spec-index.yaml`
+- 删除 `index/` 目录
+- 更新所有引用（README / prompts / skills / CLAUDE.md）
+- 理由：减少一层目录，AI 读取路径更短
+
+---
+
+## 12. Git 初始化 + 推送到 GitHub
+
+- `git init` + `git branch -m main`
+- `.gitignore` 更新：排除 `.obsidian/` 和 `.claude/`
+- 初始 commit：83 files, 17,320 insertions
+- 远程仓库：https://github.com/PM-Billy/engineer-online
+- 第二次 commit：`refactor: move spec-index.yaml to root`
+- 两次 push 均成功
+
+---
+
 ## 最终目录结构
 
 ```
@@ -230,7 +252,7 @@ engineer-online/
 ├── prompts/                     ← AI Prompt 模板（8+1）
 ├── scripts/                     ← Doc Lint（6+1）
 ├── asset/                       ← 图片资源
-├── index/spec-index.yaml        ← 机器可读索引
+├── spec-index.yaml              ← 机器可读索引
 └── _archive/                    ← 历史归档
 ```
 
@@ -270,3 +292,6 @@ engineer-online/
 | 错误码 不改名为响应码 | 保持 | 成功只有 code:0，不需要注册表管理 |
 | CLAUDE.md 删除后重建 | 重建 | Claude Code 需要自动加载入口 |
 | prompts/ 保留 | 保留 | 跨工具兼容（非 Kiro 用户的入口） |
+| index/ 移除 | spec-index.yaml 放根目录 | 减少一层目录，路径更短 |
+| .obsidian/ 排除 Git | .gitignore 排除 | 个人编辑器配置不提交 |
+| GitHub 仓库 | PM-Billy/engineer-online | 公开仓库，CI 自动生效 |
