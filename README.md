@@ -50,7 +50,7 @@ engineer-online/
 │   └── 追溯矩阵.csv                    BR → EX → AC → 任务 → API 全链路追溯（SSOT）
 │
 ├── .kiro/skills/                       ← Kiro Skills（7 个角色模板）
-├── .claude/skills/                     ← Claude Code Skills（6 个角色模板）
+├── .claude/skills/                     ← Claude Code Skills（7 个角色模板）
 │
 ├── asset/                             ← 所有图片与资源
 │   ├── architecture/                   架构图
