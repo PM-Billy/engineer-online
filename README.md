@@ -1,6 +1,6 @@
 # Engineer Online — Spec Coding 需求输入规范文档集
 
-> **用途**：本文档集作为标准化的 Spec Coding 需求输入，包含完整的 PRD、技术架构、UI 规范、任务清单与可复用的角色 Prompt 模板。
+> **用途**：本文档集作为标准化的 Spec Coding 需求输入，包含完整的 PRD、技术架构、UI 规范、任务清单与可复用的角色 Skill 模板。
 > **目标**：让 AI 编码助手能精确理解需求并生成高质量代码；让产品经理输出结构统一的 PRD；让开发者快速理解需求并进入 spec coding。
 > **版本**：2.3.0（详见 [CHANGELOG.md](CHANGELOG.md)）
 > **维护人**：Billy
@@ -71,7 +71,7 @@ engineer-online/
 |------|---------|------|
 | 接到开发任务的成员 | `tasks/任务清单.md` | 找到任务编号、输入文档、依赖和验收标准 |
 | 产品 / 项目成员 | `requirement/00-需求总览.md` | 先理解产品边界、角色、流程、全局规则 |
-| 具体开发角色 | `.kiro/skills/` | 在 Kiro 聊天中输入 `#` 选择对应角色 Skill |
+| 具体开发角色 | `.kiro/skills/` 或 `.claude/skills/` | 在 AI 工具中选择对应角色 Skill |
 | AI 编码助手 | `spec-index.yaml` | 一次读入建立全局模块索引 |
 
 ---
@@ -87,7 +87,7 @@ engineer-online/
 | 5 | `standard/技术架构.md` | 查项目级技术栈、接口规范、错误码、安全与性能要求 |
 | 6 | `standard/UI设计规范.md` | 前端任务补看页面模板、组件规格、Design Token |
 | 7 | `requirement/多语言文本.md` | 前端任务补看 UI 文案和 i18n key |
-| 8 | `.kiro/skills/` | 在 Kiro 中用 `#flutter-dev` 等 Skill 触发 AI 生成代码 |
+| 8 | `.kiro/skills/` 或 `.claude/skills/` | 选择对应角色 Skill 触发 AI 生成代码 |
 | 9 | `tasks/追溯矩阵.csv` | 改需求或补规则时定位影响范围 |
 
 ---
@@ -96,7 +96,9 @@ engineer-online/
 
 ### Skill 驱动（推荐）
 
-在 Kiro 聊天中输入 `#` 选择对应角色 Skill：
+在 AI 工具中选择对应角色 Skill：
+- **Kiro**：聊天中输入 `#` 选择（如 `#flutter-dev`）
+- **Claude Code**：使用 `/` 命令（如 `/flutter-dev`）
 
 ```
 #flutter-dev 请完成任务 QLIST-04（首页页面）
@@ -110,7 +112,7 @@ engineer-online/
 #backend-dev 请完成任务 QPOST-02（问题创建 API）
 ```
 
-### 通用 Prompt 模板
+### 通用模板（跨工具）
 
 ```
 请基于以下文档完成开发任务 [{任务编号}]：
@@ -133,7 +135,7 @@ engineer-online/
 6. Permission Code（鉴权码）
 7. i18n key（UI 文本）
 
-输出末尾请按对应 prompt 模板的"自检清单"逐项汇报。
+输出末尾请按对应 Skill 的"自检清单"逐项汇报。
 ```
 
 ### 文档间的交叉引用关系
@@ -154,7 +156,7 @@ PRD Traceability → 支持 → 变更影响分析
 
 ### 仓库性质
 
-本仓库是 **Engineer Online 产品的文档与规范仓库**，用于存放 Spec Coding PRD 模板集。仓库中**没有可编译的代码、没有包管理器、没有测试**。内容包括产品需求文档、技术设计方案、任务清单以及供 AI 生成代码时使用的 Prompt 模板。实际的代码开发在其它仓库中进行。
+本仓库是 **Engineer Online 产品的文档与规范仓库**，用于存放 Spec Coding 规范文档集。仓库中**没有可编译的代码、没有包管理器、没有测试**。内容包括产品需求文档、技术设计方案、任务清单以及供 AI 生成代码时使用的 Skill 模板。实际的代码开发在其它仓库中进行。
 
 ### 文档分层
 
@@ -190,7 +192,7 @@ layer: "engineer-online"
 
 ### AI 快速入口
 
-读取 `spec-index.yaml` 可一次获取所有模块的路径、依赖、对应 Prompt 模板。
+读取 `spec-index.yaml` 可一次获取所有模块的路径、依赖、对应 Skill 模板。
 
 ### _archive/ 使用说明
 
@@ -287,7 +289,7 @@ layer: "engineer-online"
 1. **发起变更**：在 CHANGELOG.md 底部记录你要改什么（草稿状态）
 2. **修改文档**：按上方同步规则修改所有受影响文件
 3. **自检**：运行 `bash scripts/check-all.sh`
-4. **提交 PR**：标题格式 `docs(scope): 简述`，scope 为 requirement/standard/design/tasks/prompts 之一
+4. **提交 PR**：标题格式 `docs(scope): 简述`，scope 为 requirement/standard/design/tasks/skills 之一
 5. **Review**：至少 1 人 review 后合并
 
 ### 版本号规则

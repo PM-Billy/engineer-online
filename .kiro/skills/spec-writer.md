@@ -59,8 +59,9 @@ inclusion: manual
 ├── tasks/                       ← 任务（L4）
 │   ├── 任务清单.md                 开发任务分解
 │   └── 追溯矩阵.csv               BR→EX→AC→任务→API 全链路
-├── prompts/                     ← AI Prompt 模板
-├── spec-index.yaml        ← 机器可读索引
+├── .kiro/skills/                ← Kiro Skills
+├── .claude/skills/              ← Claude Code Skills
+├── spec-index.yaml              ← 机器可读索引
 └── scripts/                     ← Doc Lint 脚本
 ```
 
