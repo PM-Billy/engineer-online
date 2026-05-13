@@ -2,7 +2,7 @@
 
 > **用途**：本文档集作为标准化的 Spec Coding 需求输入，包含完整的 PRD、技术架构、UI 规范、任务清单与可复用的角色 Prompt 模板。
 > **目标**：让 AI 编码助手能精确理解需求并生成高质量代码；让产品经理输出结构统一的 PRD；让开发者快速理解需求并进入 spec coding。
-> **版本**：2.2.0（详见 [CHANGELOG.md](CHANGELOG.md)）
+> **版本**：2.3.0（详见 [CHANGELOG.md](CHANGELOG.md)）
 > **维护人**：Billy
 
 ---
@@ -50,6 +50,7 @@ engineer-online/
 │   └── 追溯矩阵.csv                    BR → EX → AC → 任务 → API 全链路追溯（SSOT）
 │
 ├── .kiro/skills/                       ← Kiro Skills（7 个角色模板）
+├── .claude/skills/                     ← Claude Code Skills（6 个角色模板）
 │
 ├── asset/                             ← 所有图片与资源
 │   ├── architecture/                   架构图

@@ -6,6 +6,61 @@
 
 ---
 
+## [2.3.0] - 2026-05-13
+
+> 全面评估 + 阶段 1-4 优化 + Skills 体系 + 需求冲突修复 + prompts 删除 + "AI Coding" → "Spec Coding"
+
+### Added
+- **`scripts/`** — 6 个 Doc Lint 脚本 + GitHub Actions CI（check-traceability / check-numbering / check-references / check-tables / check-stats / check-ac-coverage）
+- **`tasks/追溯矩阵.csv`** — 统一的 BR→EX→AC→任务→API 全链路追溯（SSOT，88 行）
+- **`.kiro/skills/`** — 7 个 Kiro Skills（flutter-dev / h5-dev / admin-dev / backend-dev / db-design / test-qa / spec-writer）
+- **`.claude/skills/`** — 6 个 Claude Code Skills（flutter-dev / h5-dev / admin-dev / backend-dev / db-design / test-qa）
+- **`CLAUDE.md`** — 重建为 Claude Code 自动加载入口
+- **`design/UI设计.md`** — 从 standard/UI设计规范.md 拆出业务组件 + 页面模板
+- **`design/错误码.md`** — 34 个错误码完整注册表
+- **`.github/workflows/doc-lint.yml`** — GitHub Actions CI
+
+### Changed
+- **全局术语**："AI Coding" → "Spec Coding"
+- **目录重命名**：`spec/` → `requirement/`、`plan/` → `design/`
+- **design/ 文件重命名**：`部署拓扑.md` → `部署设计.md`、`权限码.md` → `权限设计.md`
+- **`design/权限设计.md`** — 角色表新增"作者"角色 + "端"列 + 角色矩阵扩展
+- **`design/错误码.md`** — 新增成功码说明（code: 0）
+- **`design/*.md`** — 章节结构对齐 Kiro design.md 风格（Overview/Architecture/Key Decisions...）
+- **`index/spec-index.yaml`** → 根目录 `spec-index.yaml`（删除 index/ 目录）
+- **`spec-index.yaml`** — prompts 段替换为 skills 段
+- **`requirement/00-需求总览.md`** — 修复 OQ-03 采纳规则；版本号统一；§5 模块链接修正；删除 GR-PERM-02；审核规则改为 UOP 人工审核；GR-TIME-01 统一时间格式
+- **`requirement/modules/05.02`** — 标题约束 5-200→5-400；回答预览 3行→2行；时间格式 360天→7天
+- **`requirement/modules/05.04`** — API 回答列表改为 cursor 分页；E-06 富文本→纯文本
+- **`requirement/modules/05.05`** — 删除搜索"浏览数加成"排序因子
+- **`requirement/modules/05.06`** — 新增"回答被采纳→通知回答者"触发场景
+- **`requirement/modules/05.07`** — 车型筛选改回单下拉；删除"浏览次数"列；编号废弃说明
+- **`requirement/功能结构.md`** — 视频 5MB→50MB；时间格式统一；新增采纳通知
+- **`standard/安全基线.md`** — 富文本→纯文本；XSS 防护简化
+- **`standard/技术架构.md`** — 移除"富文本"选型理由；§13 改为 Skill 调用
+- **所有文档** — 补齐 YAML front matter（29/30 文件覆盖）
+- **README.md** — 统计数字更新（BR 88/EX 40/AC 63）；目录树更新；Skill 驱动使用方式
+
+### Removed
+- **`prompts/`** — 9 个文件（已被 `.kiro/skills/` 和 `.claude/skills/` 替代）
+- **`requirement/需求追溯.md`** — 合并到 `tasks/追溯矩阵.csv`
+- **`tasks/AC-任务映射.csv`** — 合并到 `tasks/追溯矩阵.csv`
+- **`index/` 目录** — `spec-index.yaml` 移到根目录
+- **`CONTRIBUTING.md`** — 合并到 README
+- **`GR-PERM-02`** — "无权限不显示入口"规则移除
+- **GR-CONTENT-05 富文本白名单** — 改为"纯文本+换行，全部 HTML 转义"
+
+### Fixed
+- BR-5.4-03 与 OQ-03 采纳规则矛盾（统一为"单采纳"）
+- 需求追溯矩阵 3 条脏数据 + 7 条缺失 BR
+- 5.7 模块编号串号（BR-5.7-05/06 废弃说明）
+- README 统计数字过时（76→88 BR）
+- Obsidian 表格缺空行问题（全局修复）
+- 05.02 标题约束 5-200→5-400
+- 05.04 API 回答列表分页方式矛盾
+
+---
+
 ## [2.1.0] - 2026-05-12
 
 > 一致性修复 + CLAUDE.md/CONTRIBUTING.md 合并删除 + plan/ 子文档完善 + standard/ 安全基线完善。
