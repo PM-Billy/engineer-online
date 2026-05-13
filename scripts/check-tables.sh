@@ -22,7 +22,7 @@ while IFS= read -r file; do
   if [ -n "$out" ]; then
     ISSUES="$ISSUES\n$out"
   fi
-done < <(find . -name '*.md' -not -path './_archive/*' -not -path './.obsidian/*')
+done < <(find . -name '*.md' -not -path './_archive/*' -not -path './.obsidian/*' -not -path './.claude/*')
 
 if [ -n "$ISSUES" ]; then
   echo -e "❌ Tables missing blank line before them:$ISSUES"
