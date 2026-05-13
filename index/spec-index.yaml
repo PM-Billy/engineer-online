@@ -1,0 +1,155 @@
+# Spec Index — 机器可读的模块索引
+# AI 可一次读入此文件建立全局视图
+# 最后更新: 2026-05-12
+
+version: "2.0.0"
+product: "Engineer Online（在线工程师）"
+
+modules:
+  - id: "5.1"
+    title: "圈子管理（管理后台）"
+    path: "requirement/modules/05.01-圈子管理(管理后台).md"
+    layer: "platform"
+    tech: "Vue 3 + Ant Design Vue"
+    prompt: "prompts/管理后台页面.md"
+    entities: ["Group", "GroupTranslation"]
+    priority: "P0"
+    depends_on: []
+    ai_focus_sections: "5.1.2, 5.1.4, 5.1.6, 5.1.10"
+
+  - id: "5.2"
+    title: "圈子首页"
+    path: "requirement/modules/05.02-圈子首页.md"
+    layer: "engineer-online"
+    tech: "Flutter"
+    prompt: "prompts/Flutter页面.md"
+    entities: ["Question"]
+    priority: "P0"
+    depends_on: ["5.1"]
+    ai_focus_sections: "5.2.2, 5.2.4, 5.2.6, 5.2.10"
+
+  - id: "5.3"
+    title: "问题发布"
+    path: "requirement/modules/05.03-问题发布.md"
+    layer: "engineer-online"
+    tech: "Flutter"
+    prompt: "prompts/Flutter页面.md"
+    entities: ["Question"]
+    priority: "P0"
+    depends_on: ["5.1", "5.2"]
+    ai_focus_sections: "5.3.2, 5.3.4, 5.3.5, 5.3.6, 5.3.10"
+
+  - id: "5.4"
+    title: "问题详情"
+    path: "requirement/modules/05.04-问题详情.md"
+    layer: "engineer-online"
+    tech: "H5 WebView (Vue 3 + NuxtJS + Vant)"
+    prompt: "prompts/H5详情页.md"
+    entities: ["Question", "Answer", "Vote"]
+    priority: "P0"
+    depends_on: ["5.2", "5.3"]
+    ai_focus_sections: "5.4.2, 5.4.4, 5.4.5, 5.4.6, 5.4.7, 5.4.10"
+
+  - id: "5.5"
+    title: "搜索"
+    path: "requirement/modules/05.05-搜索.md"
+    layer: "engineer-online"
+    tech: "Flutter"
+    prompt: "prompts/Flutter页面.md"
+    entities: ["Question"]
+    priority: "P1"
+    depends_on: ["5.2"]
+    ai_focus_sections: "5.5.2, 5.5.4, 5.5.6, 5.5.10"
+
+  - id: "5.6"
+    title: "消息通知"
+    path: "requirement/modules/05.06-消息通知.md"
+    layer: "engineer-online"
+    tech: "Flutter"
+    prompt: "prompts/Flutter页面.md"
+    entities: ["Notification"]
+    priority: "P1"
+    depends_on: ["5.4"]
+    ai_focus_sections: "5.6.2, 5.6.4, 5.6.6, 5.6.10"
+
+  - id: "5.7"
+    title: "问题管理（管理后台）"
+    path: "requirement/modules/05.07-问题管理（管理后台）.md"
+    layer: "platform"
+    tech: "Vue 3 + Ant Design Vue"
+    prompt: "prompts/管理后台页面.md"
+    entities: ["Question", "AuditLog"]
+    priority: "P0"
+    depends_on: ["5.1", "5.2"]
+    ai_focus_sections: "5.7.2, 5.7.4, 5.7.5, 5.7.6, 5.7.10"
+
+  - id: "5.8"
+    title: "回答管理（管理后台）"
+    path: "requirement/modules/05.08-回答管理（管理后台）.md"
+    layer: "platform"
+    tech: "Vue 3 + Ant Design Vue"
+    prompt: "prompts/管理后台页面.md"
+    entities: ["Answer", "AuditLog"]
+    priority: "P0"
+    depends_on: ["5.1", "5.4", "5.7"]
+    ai_focus_sections: "5.8.2, 5.8.4, 5.8.5, 5.8.6, 5.8.7, 5.8.10"
+
+  - id: "5.9"
+    title: "用户管理（管理后台）"
+    path: "requirement/modules/05.09-用户管理（管理后台）.md"
+    layer: "platform"
+    tech: "Vue 3 + Ant Design Vue"
+    prompt: "prompts/管理后台页面.md"
+    entities: ["User"]
+    priority: "P0"
+    depends_on: ["5.1"]
+    ai_focus_sections: "5.9.2, 5.9.4, 5.9.6, 5.9.10"
+
+cross_cutting:
+  overview: "requirement/00-需求总览.md"
+  glossary: "requirement/00-需求总览.md#1.4"
+  i18n: "requirement/多语言文本.md"
+  traceability: "tasks/追溯矩阵.csv"
+  feature_structure: "requirement/功能结构.md"
+
+standard:
+  tech_architecture: "standard/技术架构.md"
+  ui_spec: "standard/UI设计规范.md"
+  prd_template: "standard/PRD-TEMPLATE.md"
+  security_baseline: "standard/安全基线.md"
+
+plan:
+  tech_plan: "design/技术方案.md"
+  permission: "design/权限设计.md"
+  data_model: "design/数据模型.md"
+  deployment: "design/部署设计.md"
+  error_codes: "design/错误码.md"
+  ui_design: "design/UI设计.md"
+
+tasks: "tasks/任务清单.md"
+
+prompts:
+  - name: "Flutter页面"
+    path: "prompts/Flutter页面.md"
+    modules: ["5.2", "5.3", "5.5", "5.6"]
+  - name: "H5详情页"
+    path: "prompts/H5详情页.md"
+    modules: ["5.4"]
+  - name: "管理后台页面"
+    path: "prompts/管理后台页面.md"
+    modules: ["5.1", "5.7", "5.8", "5.9"]
+  - name: "后端接口与服务"
+    path: "prompts/后端接口与服务.md"
+    modules: ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9"]
+  - name: "数据库设计"
+    path: "prompts/数据库设计.md"
+    modules: ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9"]
+  - name: "测试用例"
+    path: "prompts/测试用例.md"
+    modules: ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9"]
+  - name: "API模拟数据"
+    path: "prompts/API模拟数据.md"
+    modules: ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9"]
+  - name: "工程初始化"
+    path: "prompts/工程初始化.md"
+    modules: []

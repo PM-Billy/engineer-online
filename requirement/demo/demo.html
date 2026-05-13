@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engineer Online - Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      gap: 20px;
+    }
+    .demo-header { color: #fff; text-align: center; margin-bottom: 10px; }
+    .demo-header h1 { font-size: 22px; margin-bottom: 6px; }
+    .demo-header p { font-size: 13px; color: #9FA9BB; }
+
+    /* ===== Phone Container ===== */
+    .phone-container {
+      width: 375px;
+      height: 812px;
+      background: #fff;
+      border-radius: 40px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      border: 8px solid #2a2a3e;
+    }
+    .phone-notch {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 150px; height: 30px; background: #2a2a3e;
+      border-radius: 0 0 20px 20px; z-index: 1000;
+    }
+
+    /* ===== Page System ===== */
+    .page {
+      position: absolute; inset: 0;
+      visibility: hidden;
+      overflow: hidden;
+      background: #fff;
+      transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    .page.active { visibility: visible; }
+
+    .page-header {
+      position: absolute; top: 30px; left: 0; right: 0;
+      height: 44px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 12px; background: #ffffff;
+      z-index: 100;
+    }
+    .page-header .back-btn, .page-header .right-btn {
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: #333; cursor: pointer; background: none; border: none;
+    }
+    .page-header .title {
+      font-size: 17px; font-weight: 600; color: #191A1D;
+      position: absolute; left: 50%; transform: translateX(-50%);
+    }
+    .page-header .post-btn {
+      background: #191A1D; color: #fff; border: none;
+      border-radius: 999px; padding: 6px 18px; font-size: 14px; font-weight: 500;
+      cursor: pointer;
+    }
+
+    .page-content {
+      position: absolute; top: 74px; left: 0; right: 0; bottom: 0;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+    }
+    .page-content::-webkit-scrollbar { display: none; }
+
+    /* ===== Entry Page ===== */
+    .entry-banner {
+      background: linear-gradient(180deg, #2a2a3e 0%, #34495e 100%);
+      padding: 50px 16px 24px;
+      color: white;
+    }
+    .entry-banner-sub { font-size: 14px; opacity: 0.8; margin-bottom: 4px; }
+    .entry-banner-title-row {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .entry-banner-title { font-size: 24px; font-weight: 700; }
+    .entry-banner-btn {
+      border: 1px solid rgba(255,255,255,0.5); background: none; color: white;
+      padding: 6px 16px; border-radius: 999px; font-size: 13px; cursor: pointer;
+    }
+
+    .entry-card {
+      background: white; border-radius: 12px; margin: -10px 12px 12px;
+      padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .entry-card-title { font-size: 16px; font-weight: 700; color: #191A1D; margin-bottom: 4px; }
+    .entry-card-title span { color: #9FA9BB; font-weight: 400; font-size: 12px; float: right; }
+    .entry-card-sub { font-size: 11px; color: #bbb; margin-bottom: 12px; }
+    .entry-card-sub span { margin-right: 12px; }
+
+    .entry-list-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid #f5f5f5; cursor: pointer;
+    }
+    .entry-list-item:last-child { border-bottom: none; }
+    .entry-list-icon {
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .entry-list-text { font-size: 15px; color: #191A1D; }
+
+    .support-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; cursor: pointer;
+    }
+    .support-item-text { flex: 1; }
+    .support-item-title { font-size: 15px; color: #191A1D; }
+    .support-item-desc { font-size: 12px; color: #bbb; margin-top: 2px; }
+    .support-item-img {
+      width: 80px; height: 60px; border-radius: 8px;
+      background: linear-gradient(135deg, #e0e0e0, #f0f0f0);
+      flex-shrink: 0;
+    }
+    .support-item-actions {
+      display: flex; gap: 8px;
+    }
+    .support-action-btn {
+      width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e0e0e0;
+      background: white; display: flex; align-items: center; justify-content: center;
+      font-size: 16px; cursor: pointer;
+    }
+
+    .section-title {
+      padding: 16px; font-size: 16px; font-weight: 700; color: #191A1D;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .section-title .more { font-size: 13px; color: #bbb; font-weight: 400; }
+
+    /* ===== Home 5.2 ===== */
+    #page-home .page-header { background: transparent; }
+    .home-top-bg {
+      position: absolute; top: 0; left: 0; right: 0; height: 340px;
+      background: linear-gradient(180deg, #F0FDF4 0%, #E8F5E8 55%, #FFFFFF 100%);
+      z-index: 1;
+    }
+    #page-home .page-content { z-index: 2; }
+    .home-hero {
+      padding-top: 4px;
+      padding-bottom: 20px;
+    }
+    .home-tabs {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 10;
+      display: flex;
+      padding: 0 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .home-brand {
+      display: flex; align-items: center; gap: 12px; padding: 16px;
+    }
+    .home-brand-img {
+      width: 64px; height: 64px; border-radius: 12px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 12px; flex-shrink: 0; overflow: hidden;
+    }
+    .home-brand-name { font-size: 20px; font-weight: 700; color: #191A1D; }
+    .home-brand-desc { font-size: 13px; color: #697588; line-height: 1.4; margin-top: 2px; }
+    .home-brand-desc a { color: #009EFF; text-decoration: none; }
+    .home-stats {
+      display: flex; justify-content: space-around; padding: 12px 16px 16px;
+    }
+    .home-stat-value { font-size: 28px; font-weight: 700; color: #191A1D; }
+    .home-stat-label { font-size: 12px; color: #9FA9BB; margin-top: 2px; }
+    .home-tab {
+      flex: 1; text-align: center; padding: 12px 0;
+      font-size: 15px; color: #9FA9BB; cursor: pointer; position: relative; font-weight: 500;
+    }
+    .home-tab.active { color: #191A1D; font-weight: 700; }
+    .home-tab.active::after {
+      content: ''; position: absolute; bottom: 0; left: 30%; right: 30%;
+      height: 3px; background: #191A1D; border-radius: 2px;
+    }
+    .question-card { padding: 16px; border-bottom: 1px solid #f5f5f5; }
+    .qc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%; background: #E5F3FF;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; color: #009EFF; font-weight: 500; flex-shrink: 0;
+    }
+    .avatar.small { width: 28px; height: 28px; font-size: 11px; }
+    .avatar-wrap { position: relative; }
+    .v-badge {
+      position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px;
+      background: #009EFF; border-radius: 50%; border: 2px solid white;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 8px; font-weight: 700;
+    }
+    .qc-title { font-size: 16px; font-weight: 700; color: #191A1D; line-height: 1.4; margin-bottom: 6px; }
+    .qc-summary { font-size: 14px; color: #9FA9BB; line-height: 1.5; margin-bottom: 10px; }
+    .qc-images { display: flex; gap: 8px; margin-bottom: 10px; }
+    .qc-img { width: 100px; height: 100px; border-radius: 8px; background: #f0f0f0; object-fit: cover; }
+    .answer-preview {
+      background: #F8FAFD; border-radius: 12px; padding: 12px; margin-bottom: 10px;
+    }
+    .ap-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .ap-author { display: flex; align-items: center; gap: 6px; }
+    .ap-name { font-size: 14px; font-weight: 600; color: #191A1D; }
+    .gac-tag {
+      font-size: 11px; color: #697588; background: #F2F3F5;
+      padding: 2px 8px; border-radius: 4px; border: 1px solid #e0e0e0;
+    }
+    .adopt-stamp {
+      font-size: 11px; color: #52C41A; border: 1px dashed #52C41A;
+      padding: 2px 8px; border-radius: 999px; transform: rotate(-8deg);
+    }
+    .ap-text { font-size: 14px; color: #697588; line-height: 1.5; }
+    .qc-meta { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #9FA9BB; }
+    .qc-meta-right { display: flex; align-items: center; gap: 4px; }
+    .fab-ask {
+      position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #191A1D; color: white; padding: 14px 48px;
+      border-radius: 999px; font-size: 16px; font-weight: 500;
+      border: none; cursor: pointer; z-index: 50;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      white-space: nowrap;
+    }
+
+    /* ===== Ask 5.3 ===== */
+    .ask-form { padding: 16px; }
+    .ask-input { width: 100%; border: none; border-bottom: 1px solid #f0f0f0; padding: 12px 0; font-size: 16px; outline: none; }
+    .ask-input::placeholder { color: #ccc; }
+    .ask-hint { font-size: 12px; color: #9FA9BB; margin-top: 4px; }
+    .ask-textarea { width: 100%; border: none; padding: 12px 0; font-size: 15px; outline: none; resize: none; min-height: 120px; font-family: inherit; }
+    .ask-textarea::placeholder { color: #ccc; }
+    .upload-area {
+      width: 80px; height: 80px; border-radius: 8px; background: #f8f8f8;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; color: #ccc; margin-top: 8px; cursor: pointer;
+    }
+    .info-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 0; border-bottom: 1px solid #f5f5f5;
+    }
+    .info-row-left { display: flex; align-items: center; gap: 10px; font-size: 15px; color: #191A1D; }
+    .info-row-right { display: flex; align-items: center; gap: 4px; font-size: 15px; color: #191A1D; font-weight: 500; }
+    .info-icon { font-size: 18px; }
+
+    /* ===== Detail 5.4 ===== */
+    .detail-section { padding: 16px; border-bottom: 8px solid #f5f5f5; }
+    .detail-author { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .detail-author-name { font-size: 15px; font-weight: 600; color: #191A1D; }
+    .detail-title { font-size: 20px; font-weight: 700; color: #191A1D; line-height: 1.35; margin-bottom: 12px; }
+    .detail-content { font-size: 15px; color: #363F4F; line-height: 1.7; margin-bottom: 14px; }
+    .media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 14px; }
+    .media-item { aspect-ratio: 1; background: #d0d0d0; border-radius: 4px; position: relative; overflow: hidden; }
+    .video-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .video-play::after {
+      content: '▶'; width: 36px; height: 36px; background: rgba(255,255,255,0.9);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: #333;
+    }
+    .detail-tag { font-size: 14px; color: #9FA9BB; margin-bottom: 10px; }
+    .detail-info-row {
+      display: flex; align-items: center; gap: 16px;
+      font-size: 14px; color: #9FA9BB; margin-bottom: 12px;
+    }
+    .detail-info-row .translate-btn { color: #009EFF; background: none; border: none; font-size: 14px; cursor: pointer; }
+    .detail-actions-bar {
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px 0; border-top: 1px solid #f0f0f0; gap: 24px;
+    }
+    .detail-action { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #697588; background: none; border: none; cursor: pointer; }
+    .answers-header { padding: 16px; font-size: 18px; font-weight: 700; color: #191A1D; }
+    .answers-header span { font-weight: 400; color: #9FA9BB; }
+    .answer-item { padding: 0 16px 16px; border-bottom: 1px solid #f5f5f5; }
+    .answer-item:last-child { border-bottom: none; }
+    .answer-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .answer-author-row { display: flex; align-items: center; gap: 8px; }
+    .answer-author-info { display: flex; flex-direction: column; }
+    .answer-name-line { display: flex; align-items: center; gap: 6px; }
+    .answer-name { font-size: 15px; font-weight: 600; color: #191A1D; }
+    .answer-role { font-size: 12px; color: #9FA9BB; margin-top: 1px; }
+    .btn-accept { background: #191A1D; color: white; border: none; border-radius: 999px; padding: 6px 16px; font-size: 13px; cursor: pointer; }
+    .btn-accept.accepted { background: #52C41A; }
+    .answer-body { font-size: 15px; color: #363F4F; line-height: 1.6; margin-bottom: 10px; padding-left: 36px; }
+    .answer-images { display: flex; gap: 6px; margin-bottom: 10px; padding-left: 36px; }
+    .answer-images img { width: 80px; height: 80px; border-radius: 6px; background: #d0d0d0; object-fit: cover; }
+    .answer-footer { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #9FA9BB; padding-left: 36px; }
+    .answer-footer .action { cursor: pointer; }
+    .vote-btn { display: flex; align-items: center; gap: 3px; cursor: pointer; }
+    .reply-list { margin-left: 36px; margin-top: 12px; }
+    .reply-item { padding: 10px 0; border-top: 1px solid #f5f5f5; }
+    .reply-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 14px; }
+    .reply-author { font-weight: 600; color: #191A1D; }
+    .reply-arrow { color: #9FA9BB; }
+    .reply-target { color: #191A1D; }
+    .author-badge { background: #E5F3FF; color: #009EFF; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+    .reply-time { margin-left: auto; font-size: 12px; color: #9FA9BB; }
+    .reply-content { font-size: 14px; color: #363F4F; line-height: 1.5; margin-bottom: 6px; }
+    .reply-actions { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #9FA9BB; }
+    .reply-input-bar {
+      position: absolute; bottom: 0; left: 0; right: 0; background: white;
+      padding: 10px 16px; display: flex; gap: 10px; align-items: center;
+      border-top: 1px solid #f0f0f0; z-index: 50;
+    }
+    .reply-input { flex: 1; border: 1px solid #e0e0e0; border-radius: 999px; padding: 8px 16px; font-size: 14px; outline: none; }
+    .reply-send { background: #009EFF; color: white; border: none; border-radius: 999px; padding: 8px 18px; font-size: 14px; cursor: pointer; }
+
+    /* ===== Search 5.5 ===== */
+    .search-header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; }
+    .search-box { flex: 1; display: flex; align-items: center; background: #F5F5F5; border-radius: 8px; padding: 8px 12px; gap: 8px; }
+    .search-box input { flex: 1; border: none; background: none; font-size: 15px; outline: none; }
+    .search-cancel { font-size: 15px; color: #9FA9BB; background: none; border: none; cursor: pointer; }
+    .search-result-section { padding: 8px 16px 0; }
+    .search-section-title { font-size: 15px; color: #191A1D; margin-bottom: 8px; }
+    .sr-card { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f5f5f5; cursor: pointer; }
+    .sr-main { flex: 1; }
+    .sr-title { font-size: 16px; font-weight: 600; color: #191A1D; line-height: 1.4; margin-bottom: 4px; }
+    .sr-title .hl { color: #EB0A1E; font-style: normal; }
+    .sr-desc { font-size: 13px; color: #9FA9BB; line-height: 1.5; margin-bottom: 8px; }
+    .sr-desc .hl { color: #EB0A1E; font-style: normal; }
+    .sr-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #bbb; }
+    .sr-thumb { width: 70px; height: 70px; border-radius: 6px; background: #e8e8e8; flex-shrink: 0; }
+
+    /* ===== Messages 5.6 ===== */
+    .notif-list { padding-top: 8px; }
+    .notif-item { padding: 14px 16px; border-bottom: 1px solid #f5f5f5; cursor: pointer; }
+    .notif-header { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px; }
+    .notif-dot { width: 8px; height: 8px; background: #EB0A1E; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+    .notif-dot.read { background: transparent; }
+    .notif-title { font-size: 16px; font-weight: 600; color: #191A1D; }
+    .notif-title.read { font-weight: 400; }
+    .notif-body { font-size: 14px; color: #697588; line-height: 1.5; padding-left: 16px; margin-bottom: 4px; }
+    .notif-time { font-size: 12px; color: #bbb; padding-left: 16px; }
+
+    /* ===== Bottom Nav ===== */
+    .bottom-nav {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 64px;
+      background: rgba(255,255,255,0.98); backdrop-filter: blur(10px);
+      display: flex; justify-content: space-around; align-items: center;
+      border-top: 1px solid #f0f0f0; z-index: 200;
+    }
+    .bottom-nav .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      cursor: pointer; padding: 6px 12px; border: none; background: none;
+    }
+    .bottom-nav .nav-item .nav-icon { font-size: 22px; color: #9FA9BB; }
+    .bottom-nav .nav-item .nav-label { font-size: 10px; color: #9FA9BB; white-space: nowrap; }
+    .bottom-nav .nav-item.active .nav-icon,
+    .bottom-nav .nav-item.active .nav-label { color: #009EFF; }
+
+    /* 非服务页隐藏底部标签栏 */
+    .page:not(#page-entry) .bottom-nav { display: none; }
+    #page-home .page-content,
+    #page-ask .page-content,
+    #page-search .page-content,
+    #page-messages .page-content { bottom: 0 !important; }
+    #page-detail .page-content { bottom: 54px !important; }
+
+    /* ===== Toast & Modal ===== */
+    .toast {
+      position: absolute; top: 80px; left: 50%; transform: translateX(-50%) translateY(-40px);
+      background: rgba(0,0,0,0.8); color: white; padding: 10px 20px;
+      border-radius: 999px; font-size: 14px; z-index: 1000; opacity: 0; pointer-events: none;
+      transition: all 0.3s;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .modal-bg {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+      display: none; align-items: center; justify-content: center; z-index: 500;
+    }
+    .modal-bg.show { display: flex; }
+    .modal-box { background: white; border-radius: 16px; padding: 24px; width: 280px; text-align: center; }
+    .modal-box h3 { font-size: 17px; margin-bottom: 8px; }
+    .modal-box p { font-size: 14px; color: #666; margin-bottom: 20px; }
+    .modal-btns { display: flex; gap: 12px; }
+    .modal-btns button { flex: 1; padding: 10px; border-radius: 999px; cursor: pointer; }
+    .btn-cancel { border: 1px solid #ddd; background: #fff; }
+    .btn-confirm { border: none; background: #191A1D; color: #fff; }
+  </style>
+</head>
+<body>
+
+<div class="demo-header">
+  <h1>Engineer Online - Demo</h1>
+  <p>按原型 1:1 还原 | 底部导航切换 | 点击 Engineers Online 进入</p>
+</div>
+
+<div class="phone-container">
+  <div class="phone-notch"></div>
+  <div class="toast" id="toast"></div>
+  <div class="modal-bg" id="modal">
+    <div class="modal-box">
+      <h3 id="m-title">提示</h3>
+      <p id="m-text">内容</p>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="hideModal()">取消</button>
+        <button class="btn-confirm" onclick="confirmModal()">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ENTRY PAGE (Service) ==================== -->
+  <div class="page active" id="page-entry">
+    <div class="page-content" style="top: 0;">
+      <div class="entry-banner">
+        <div class="entry-banner-sub">Hello, Welcome to GAC</div>
+        <div class="entry-banner-title-row">
+          <div class="entry-banner-title">GAC SERVICES</div>
+          <button class="entry-banner-btn">+Add Vehicle</button>
+        </div>
+      </div>
+
+      <div class="entry-card">
+        <div class="entry-card-title">GAC <span style="color:#EB0A1E;">CARE</span></div>
+        <div class="entry-card-sub"><span>Customer Centric</span><span>Advanced Assurance</span><span>Rapid Responsive</span><span>Exclusive Expertise</span></div>
+        <div class="entry-list-item"><div class="entry-list-icon">📝</div><div class="entry-list-text">Service Appointment</div></div>
+        <div class="entry-list-item"><div class="entry-list-icon">🚗</div><div class="entry-list-text">Roadside Assistance</div></div>
+        <div class="entry-list-item"><div class="entry-list-icon">🔌</div><div class="entry-list-text">Home Charging Installation</div></div>
+      </div>
+
+      <div class="section-title">GAC SUPPORT CENTER</div>
+      <div style="padding: 0 16px;">
+        <div class="support-item">
+          <div class="entry-list-icon">🎧</div>
+          <div class="support-item-text">
+            <div class="support-item-title">Customer Service</div>
+            <div class="support-item-desc">Get in touch for help.</div>
+          </div>
+          <div class="support-item-actions">
+            <button class="support-action-btn">💬</button>
+            <button class="support-action-btn">📞</button>
+          </div>
+        </div>
+        <div class="support-item" onclick="navigateTo('home')">
+          <div class="entry-list-icon">👤</div>
+          <div class="support-item-text">
+            <div class="support-item-title">Engineers Online</div>
+            <div class="support-item-desc">Providing you with professional solutions..</div>
+          </div>
+          <div class="support-item-img"></div>
+        </div>
+      </div>
+
+      <div class="section-title">GAC SERVICE CENTER <span class="more">More ›</span></div>
+      <div style="margin: 0 16px 16px; border-radius: 12px; overflow: hidden; background: #f0f0f0; height: 160px; position: relative;">
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+          <div style="color: white; font-size: 16px; font-weight: 600;">GAC พัฒนาการ</div>
+          <div style="color: rgba(255,255,255,0.8); font-size: 12px; margin-top: 2px;">1914 Phatthanakan 52 Alley...</div>
+        </div>
+      </div>
+
+      <div class="section-title">MAP SERVICE</div>
+      <div style="margin: 0 16px 16px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #a8e6cf, #dcedc1); height: 160px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #666;">
+        🗺️ Map Placeholder
+      </div>
+      <div style="padding: 0 16px 16px; font-size: 13px; color: #697588;">
+        Search for nearby charging stations, gas stations and plan routes.
+      </div>
+      <div style="height: 80px;"></div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="showToast('GAC')">
+        <span class="nav-icon">🚘</span><span class="nav-label">GAC</span>
+      </button>
+      <button class="nav-item" onclick="showToast('Charging')">
+        <span class="nav-icon">⚡</span><span class="nav-label">Charging</span>
+      </button>
+      <button class="nav-item active" onclick="showToast('Service')">
+        <span class="nav-icon">🔧</span><span class="nav-label">Service</span>
+      </button>
+      <button class="nav-item" onclick="showToast('Profile')">
+        <span class="nav-icon">👤</span><span class="nav-label">Profile</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== HOME 5.2 ==================== -->
+  <div class="page" id="page-home">
+    <div class="home-top-bg"></div>
+    <div class="page-header">
+      <button class="back-btn" onclick="navigateTo('entry')">‹</button>
+      <span></span>
+      <button class="right-btn" onclick="navigateTo('search')">🔍</button>
+    </div>
+    <div class="page-content" style="bottom: 64px;">
+      <div class="home-hero">
+        <div class="home-brand">
+          <div class="home-brand-img">
+            <svg width="40" height="40" viewBox="0 0 40 40"><rect fill="rgba(255,255,255,0.3)" width="40" height="40" rx="8"/><text x="20" y="25" text-anchor="middle" fill="white" font-size="10">IMG</text></svg>
+          </div>
+          <div class="home-brand-text">
+            <div class="home-brand-name">Engineer Online</div>
+            <div class="home-brand-desc">Online engineers provide professional answers to your questions. <a href="#">Learn more</a></div>
+          </div>
+        </div>
+
+        <div class="home-stats">
+          <div class="home-stat-item"><div class="home-stat-value">12,000</div><div class="home-stat-label">Cumulative<br>Questions</div></div>
+          <div class="home-stat-item"><div class="home-stat-value">1,200,000</div><div class="home-stat-label">Cumulative<br>Replies</div></div>
+          <div class="home-stat-item"><div class="home-stat-value">39</div><div class="home-stat-label">Today's<br>Post</div></div>
+        </div>
+      </div>
+
+      <div class="home-tabs">
+        <div class="home-tab active" onclick="switchTab(this,'hot')">Hot</div>
+        <div class="home-tab" onclick="switchTab(this,'new')">Newest</div>
+        <div class="home-tab" onclick="switchTab(this,'my')">My Question</div>
+      </div>
+
+      <div class="question-card" onclick="navigateTo('detail')">
+        <div class="qc-header">
+          <div class="avatar" style="background:#333;color:#fff;">🚗</div>
+          <div style="font-size:15px;font-weight:600;">Car Owner</div>
+        </div>
+        <div class="qc-title">What does it mean when a yellow "turtle" lights up on my dashboard? Can I still drive the car?</div>
+        <div class="qc-summary">I just started my car and noticed a yellow warning light on the dashboard I haven't seen before. It looks like a small turtle. There might also be text like "POWER...</div>
+        <div class="qc-images">
+          <div class="qc-img" style="background:linear-gradient(135deg,#1a1a2e,#4a4a6e);"></div>
+          <div class="qc-img" style="background:linear-gradient(135deg,#2d3436,#636e72);"></div>
+          <div class="qc-img" style="background:linear-gradient(135deg,#57606f,#dfe4ea);"></div>
+        </div>
+        <div class="answer-preview">
+          <div class="ap-header">
+            <div class="ap-author">
+              <div class="avatar-wrap"><div class="avatar small">👤</div></div>
+              <span class="ap-name">Wayne</span>
+              <span class="gac-tag">GAC</span>
+            </div>
+            <span class="adopt-stamp">Adopt</span>
+          </div>
+          <div class="ap-text">Hello, please don't panic. The "turtle light" is a crucial pre-warning signal. This indicator is officially called the Powertrain Performance / Power Limitation...</div>
+        </div>
+        <div class="qc-meta"><span>2 d ago</span><div class="qc-meta-right"><span>💬</span><span>6</span></div></div>
+      </div>
+
+      <div class="question-card" onclick="navigateTo('detail')">
+        <div class="qc-header">
+          <div class="avatar" style="background:#FFEFE0;color:#EB0A1E;">AO</div>
+          <div style="font-size:15px;font-weight:600;">AION Owner</div>
+        </div>
+        <div class="qc-title">AION V 充电到80%后仪表盘出现红色警告图标</div>
+        <div class="qc-summary">使用快充充电到80%左右，仪表盘出现红色警告图标，请问这是什么原因？之前没有遇到过这种情况。</div>
+        <div class="qc-images"><div class="qc-img" style="background:linear-gradient(135deg,#eb3349,#f45c43);"></div></div>
+        <!-- Answer preview: accepted first -->
+        <div class="answer-preview">
+          <div class="ap-header">
+            <div class="ap-author">
+              <div class="avatar-wrap"><div class="avatar small" style="background:#E5F3FF;color:#009EFF;">E</div><div class="v-badge">V</div></div>
+              <span class="ap-name">Engineer Li</span>
+              <span class="gac-tag">GAC</span>
+            </div>
+            <span class="adopt-stamp">Adopt</span>
+          </div>
+          <div class="ap-text">红色警告图标通常表示充电系统异常。请检查充电枪连接是否牢固，或尝试更换充电桩。如问题持续，请联系4S店。</div>
+        </div>
+        <div class="answer-preview">
+          <div class="ap-header">
+            <div class="ap-author">
+              <div class="avatar-wrap"><div class="avatar small" style="background:#E5F3FF;color:#009EFF;">W</div><div class="v-badge">V</div></div>
+              <span class="ap-name">Wayne</span>
+              <span class="gac-tag">GAC</span>
+            </div>
+          </div>
+          <div class="ap-text">另外，如果快充功率过大也可能触发保护机制，建议尝试慢充观察是否复现。</div>
+        </div>
+        <div class="qc-meta"><span>5 h ago</span><div class="qc-meta-right"><span>💬</span><span>12</span></div></div>
+      </div>
+
+      <div class="question-card" onclick="navigateTo('detail')">
+        <div class="qc-header">
+          <div class="avatar" style="background:#F0F4FF;color:#3D5AFE;">U</div>
+          <div style="font-size:15px;font-weight:600;">User_9527</div>
+        </div>
+        <div class="qc-title">AION S Plus 空调制冷效果变差是什么原因？</div>
+        <div class="qc-summary">最近发现空调制冷效果明显变差，出风口温度不够低，是否需要加氟？</div>
+        <!-- No accepted answer, sorted by reply time desc -->
+        <div class="answer-preview">
+          <div class="ap-header">
+            <div class="ap-author">
+              <div class="avatar-wrap"><div class="avatar small" style="background:#E5F3FF;color:#009EFF;">W</div><div class="v-badge">V</div></div>
+              <span class="ap-name">Wayne</span>
+              <span class="gac-tag">GAC</span>
+            </div>
+          </div>
+          <div class="ap-text">空调制冷效果变差可能是滤芯堵塞或制冷剂不足。建议先更换空调滤芯，如仍有问题请到4S店检测。</div>
+        </div>
+        <div class="answer-preview">
+          <div class="ap-header">
+            <div class="ap-author">
+              <div class="avatar-wrap"><div class="avatar small" style="background:#E5F3FF;color:#009EFF;">T</div><div class="v-badge">V</div></div>
+              <span class="ap-name">Tina</span>
+              <span class="gac-tag">GAC</span>
+            </div>
+          </div>
+          <div class="ap-text">也可以先检查一下冷凝器表面是否有杂物堵塞，清洗后效果会有改善。</div>
+        </div>
+        <div class="qc-meta"><span>7 d ago</span><div class="qc-meta-right"><span>💬</span><span>8</span></div></div>
+      </div>
+
+      <div class="question-card" onclick="navigateTo('detail')">
+        <div class="qc-header">
+          <div class="avatar" style="background:#FFF8F2;color:#FFA762;">V</div>
+          <div style="font-size:15px;font-weight:600;">Vince</div>
+        </div>
+        <div class="qc-title">AION Y 倒车影像突然不显示了怎么排查？</div>
+        <div class="qc-summary">今天倒车时发现倒车影像黑屏，但雷达声音正常。这是摄像头问题还是线路问题？</div>
+        <div class="qc-images">
+          <div class="qc-img" style="background:linear-gradient(135deg,#11998e,#38ef7d);"></div>
+          <div class="qc-img" style="background:linear-gradient(135deg,#fc4a1a,#f7b733);"></div>
+        </div>
+        <div class="answer-preview">
+          <div class="ap-header">
+            <div class="ap-author">
+              <div class="avatar-wrap"><div class="avatar small" style="background:#E5F3FF;color:#009EFF;">T</div><div class="v-badge">V</div></div>
+              <span class="ap-name">Tina</span>
+              <span class="gac-tag">GAC</span>
+            </div>
+            <span class="adopt-stamp">Adopt</span>
+          </div>
+          <div class="ap-text">倒车影像黑屏但雷达正常，通常是摄像头或线路问题。建议先检查后备箱处摄像头连接线是否松动。</div>
+        </div>
+        <div class="qc-meta"><span>3 d ago</span><div class="qc-meta-right"><span>💬</span><span>15</span></div></div>
+      </div>
+
+      <div style="height:40px;"></div>
+    </div>
+    <button class="fab-ask" onclick="navigateTo('ask')">Ask a Question</button>
+
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="showToast('GAC')"><span class="nav-icon">🚙</span><span class="nav-label">GAC</span></button>
+      <button class="nav-item" onclick="showToast('Charging')"><span class="nav-icon">⚡</span><span class="nav-label">Charging</span></button>
+      <button class="nav-item active" onclick="showToast('Service')"><span class="nav-icon">🔧</span><span class="nav-label">Service</span></button>
+      <button class="nav-item" onclick="showToast('Profile')"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
+    </div>
+  </div>
+
+  <!-- ==================== ASK 5.3 ==================== -->
+  <div class="page" id="page-ask">
+    <div class="page-header">
+      <button class="back-btn" onclick="navigateTo('home')">‹</button>
+      <span class="title">Ask a Question</span>
+      <button class="post-btn" onclick="showToast('发布成功')">Post</button>
+    </div>
+    <div class="page-content" style="bottom: 64px;">
+      <div class="ask-form">
+        <input type="text" class="ask-input" placeholder="Enter a title (5-400 characters)">
+        <textarea class="ask-textarea" placeholder="Please describe the issue you are experiencing in as much detail as possible (Optional)"></textarea>
+        <div class="upload-area">+</div>
+        <div class="ask-hint">Images ≤5MB each, Video ≤5MB/60s. Up to 9 total.</div>
+        <div style="margin-top:24px;">
+          <div class="info-row" onclick="showToast('选择车辆')"><div class="info-row-left"><span class="info-icon">🚗</span><span>Vehicle</span></div><div class="info-row-right"><span>AION V</span><span>›</span></div></div>
+          <div class="info-row" onclick="showToast('输入里程')"><div class="info-row-left"><span class="info-icon">🔒</span><span>Total Mileage</span></div><div class="info-row-right"><span>1203km</span><span>›</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="showToast('GAC')"><span class="nav-icon">🚙</span><span class="nav-label">GAC</span></button>
+      <button class="nav-item" onclick="showToast('Charging')"><span class="nav-icon">⚡</span><span class="nav-label">Charging</span></button>
+      <button class="nav-item active" onclick="showToast('Service')"><span class="nav-icon">🔧</span><span class="nav-label">Service</span></button>
+      <button class="nav-item" onclick="showToast('Profile')"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
+    </div>
+  </div>
+
+  <!-- ==================== DETAIL 5.4 ==================== -->
+  <div class="page" id="page-detail">
+    <div class="page-header">
+      <button class="back-btn" onclick="navigateTo('home')">‹</button>
+      <span></span>
+      <button class="right-btn" onclick="showToast('分享')">↗</button>
+    </div>
+    <div class="page-content" style="bottom: 110px;">
+      <div class="detail-section">
+        <div class="detail-author"><div class="avatar" style="background:#e0e0e0;color:#999;"></div><div class="detail-author-name">Billy</div></div>
+        <div class="detail-title">My journey to driving on sunshine by subscribing to solar</div>
+        <div class="detail-content">Earlier this year I bought a gorgeous red Model 3. My Tesla brought me immense joy and pride knowing I am driving without emissions, but I also knew that I could do more from a sustainability perspective.</div>
+        <div class="media-grid">
+          <div class="media-item" style="background:#d0d0d0;"></div>
+          <div class="media-item" style="background:#c0c0c0;"><div class="video-play"></div></div>
+          <div class="media-item" style="background:#d0d0d0;"></div>
+          <div class="media-item" style="background:#c8c8c8;"></div>
+          <div class="media-item" style="background:#d8d8d8;"></div>
+          <div class="media-item" style="background:#c0c0c0;"></div>
+        </div>
+        <div class="detail-tag">Model: AION V</div>
+        <div class="detail-info-row"><span>7 d ago</span><button class="translate-btn" onclick="showToast('翻译切换')">Tranlate</button></div>
+        <!-- Delete: only author visible (BR-5.4) -->
+        <div class="detail-actions-bar">
+          <button class="detail-action" onclick="showModal('删除问题','确定要删除这个问题吗？')"><span>🗑</span><span>Delete</span></button>
+        </div>
+      </div>
+
+      <div class="answers-header">Answers <span>(209)</span></div>
+
+      <!-- Answer 1: accepted -->
+      <div class="answer-item">
+        <div class="answer-top">
+          <div class="answer-author-row">
+            <div class="avatar-wrap"><div class="avatar small" style="background:#e0e0e0;"></div><div class="v-badge" style="width:12px;height:12px;font-size:7px;">V</div></div>
+            <div class="answer-author-info">
+              <div class="answer-name-line"><span class="answer-name">Wayne</span><span class="gac-tag">GAC</span></div>
+              <div class="answer-role">Product Manager</div>
+            </div>
+          </div>
+          <button class="btn-accept accepted" onclick="toggleAccept(this)">✓ Accepted</button>
+        </div>
+        <div class="answer-body">Comment content Comment content Comment content Comment content Comment content</div>
+        <div class="answer-images"><div style="width:80px;height:80px;background:#d0d0d0;border-radius:6px;"></div><div style="width:80px;height:80px;background:#d0d0d0;border-radius:6px;"></div><div style="width:80px;height:80px;background:#d0d0d0;border-radius:6px;"></div></div>
+        <div class="answer-footer"><span>2 d ago</span><span class="action">Reply</span><span class="action">Translate</span><span style="flex:1;"></span><span class="vote-btn" onclick="toggleVote(this)">👍 12</span><span class="vote-btn" onclick="toggleVote(this)">👎 6</span></div>
+        <div class="reply-list">
+          <div class="reply-item">
+            <div class="reply-header"><span class="reply-author">Billy</span><span class="author-badge">Author</span><span class="reply-time">2 d ago</span></div>
+            <div class="reply-content">Comment content Comment content Comment content Comment content Comment content</div>
+            <div class="reply-actions"><span class="action">Reply</span><span class="action">Translate</span><span style="flex:1;"></span><span class="vote-btn" onclick="toggleVote(this)">👍 12</span><span class="vote-btn" onclick="toggleVote(this)">👎 6</span></div>
+          </div>
+          <div class="reply-item">
+            <div class="reply-header"><span class="reply-author">Wayne</span><span class="reply-arrow">▸</span><span class="reply-target">Billy</span><span class="author-badge">Author</span><span class="reply-time">2 d ago</span></div>
+            <div class="reply-content">Comment content Comment content Comment content Comment content</div>
+            <div class="reply-actions"><span class="action">Reply</span><span class="action">Translate</span><span style="flex:1;"></span><span class="vote-btn" onclick="toggleVote(this)">👍 12</span><span class="vote-btn" onclick="toggleVote(this)">👎 6</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Answer 2: not accepted, Accept hidden after another answer accepted -->
+      <div class="answer-item">
+        <div class="answer-top">
+          <div class="answer-author-row">
+            <div class="avatar-wrap"><div class="avatar small" style="background:#e0e0e0;"></div><div class="v-badge" style="width:12px;height:12px;font-size:7px;">V</div></div>
+            <div class="answer-author-info">
+              <div class="answer-name-line"><span class="answer-name">Tina</span><span class="gac-tag">GAC</span></div>
+              <div class="answer-role">Technical Engineer</div>
+            </div>
+          </div>
+          <!-- Accept hidden: only 1 answer can be accepted (BR-5.4-03) -->
+        </div>
+        <div class="answer-body">Comment content Comment content Comment content Comment content Comment content</div>
+        <div class="answer-footer"><span>2 d ago</span><span class="action">Reply</span><span class="action">Translate</span><span style="flex:1;"></span><span class="vote-btn" onclick="toggleVote(this)">👍 12</span><span class="vote-btn" onclick="toggleVote(this)">👎 6</span></div>
+        <div class="reply-list">
+          <div class="reply-item">
+            <div class="reply-header"><span class="reply-author">Billy</span><span class="author-badge">Author</span><span class="reply-time">2 d ago</span></div>
+            <div class="reply-content">Comment content Comment content Comment content Comment content Comment content</div>
+            <div class="reply-actions"><span class="action">Reply</span><span class="action">Translate</span><span style="flex:1;"></span><span class="vote-btn" onclick="toggleVote(this)">👍 12</span><span class="vote-btn" onclick="toggleVote(this)">👎 6</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Answer 3: regular user, no accept button -->
+      <div class="answer-item">
+        <div class="answer-top">
+          <div class="answer-author-row">
+            <div class="avatar small" style="background:#FFF8F2;color:#FFA762;">U</div>
+            <div class="answer-author-info"><div class="answer-name-line"><span class="answer-name">User_8888</span></div><div class="answer-role">CAR_OWNER</div></div>
+          </div>
+        </div>
+        <div class="answer-body">Comment content Comment content Comment content Comment content Comment content</div>
+        <div class="answer-footer"><span>2 d ago</span><span class="action">Reply</span><span class="action">Translate</span><span style="flex:1;"></span><span class="vote-btn" onclick="toggleVote(this)">👍 12</span><span class="vote-btn" onclick="toggleVote(this)">👎 6</span></div>
+      </div>
+
+      <!-- Answer 4: accept hidden after another answer accepted -->
+      <div class="answer-item">
+        <div class="answer-top">
+          <div class="answer-author-row">
+            <div class="avatar-wrap"><div class="avatar small" style="background:#e0e0e0;"></div><div class="v-badge" style="width:12px;height:12px;font-size:7px;">V</div></div>
+            <div class="answer-author-info">
+              <div class="answer-name-line"><span class="answer-name">Engineer Li</span><span class="gac-tag">GAC</span></div>
+              <div class="answer-role">Senior Engineer</div>
+            </div>
+          </div>
+          <!-- Accept hidden: only 1 answer can be accepted (BR-5.4-03) -->
+        </div>
+        <div class="answer-body">Comment content Comment content Comment content Comment content Comment content</div>
+        <div class="answer-footer"><span>1 d ago</span><span class="action">Reply</span><span class="action">Translate</span><span style="flex:1;"></span><span class="vote-btn" onclick="toggleVote(this)">👍 12</span><span class="vote-btn" onclick="toggleVote(this)">👎 6</span></div>
+      </div>
+
+      <div style="height:20px;"></div>
+    </div>
+    <!-- BR-5.4-20: Bottom reply entry based on group reply permission config. Hidden after accept (BR-5.4-12) -->
+    <div class="reply-input-bar" id="detail-reply-bar" style="display:none;"><input type="text" class="reply-input" placeholder="Write a reply..."><button class="reply-send" onclick="showToast('发送回复')">Send</button></div>
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="showToast('GAC')"><span class="nav-icon">🚙</span><span class="nav-label">GAC</span></button>
+      <button class="nav-item" onclick="showToast('Charging')"><span class="nav-icon">⚡</span><span class="nav-label">Charging</span></button>
+      <button class="nav-item active" onclick="showToast('Service')"><span class="nav-icon">🔧</span><span class="nav-label">Service</span></button>
+      <button class="nav-item" onclick="showToast('Profile')"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
+    </div>
+  </div>
+
+  <!-- ==================== SEARCH 5.5 ==================== -->
+  <div class="page" id="page-search">
+    <div class="page-header">
+      <div class="search-header" style="width:100%;padding:0;">
+        <div class="search-box"><span>🔍</span><input type="text" value="AION V" placeholder="Search questions..."><span style="cursor:pointer;color:#bbb;">✕</span></div>
+        <button class="search-cancel" onclick="navigateTo('home')">Cancel</button>
+      </div>
+    </div>
+    <div class="page-content" style="bottom: 64px;">
+      <div class="search-result-section">
+        <div class="search-section-title">Search Result</div>
+        <div class="sr-card" onclick="navigateTo('detail')"><div class="sr-main"><div class="sr-title">Q&A Tilte title title title title <em class="hl">AION V</em> title title title title title title title...</div><div class="sr-desc">Description Description Description Description Description Description Description Description Description Descript...</div><div class="sr-meta"><div class="avatar small" style="background:#e0e0e0;"></div><span>Wayne</span><span>2 d ago</span><span>💬 12</span></div></div><div class="sr-thumb"></div></div>
+        <div class="sr-card" onclick="navigateTo('detail')"><div class="sr-main"><div class="sr-title">Q&A Tilte title title title title title title title title title title title...</div><div class="sr-desc">Description Description Description Description Description Description <em class="hl">AION V</em> Description Description Descript...</div><div class="sr-meta"><div class="avatar small" style="background:#e0e0e0;"></div><span>Wayne</span><span>5 h ago</span><span>💬 12</span></div></div><div class="sr-thumb"></div></div>
+        <div class="sr-card" onclick="navigateTo('detail')"><div class="sr-main"><div class="sr-title">Q&A Tilte title title title title <em class="hl">AION V</em> title title title title title title title...</div><div class="sr-desc">Description Description Description Description Description Description Description Description Description Descript...</div><div class="sr-meta"><div class="avatar small" style="background:#e0e0e0;"></div><span>Wayne</span><span>30 m ago</span><span>💬 12</span></div></div><div class="sr-thumb"></div></div>
+        <div class="sr-card" onclick="navigateTo('detail')"><div class="sr-main"><div class="sr-title">Q&A Tilte title title title title title title title title title title title...</div><div class="sr-desc">Description Description Description Description Description Description Description Description Description Descript...</div><div class="sr-meta"><div class="avatar small" style="background:#e0e0e0;"></div><span>Wayne</span><span>2025-10-29 12:24</span><span>💬 12</span></div></div><div class="sr-thumb"></div></div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="showToast('GAC')"><span class="nav-icon">🚙</span><span class="nav-label">GAC</span></button>
+      <button class="nav-item" onclick="showToast('Charging')"><span class="nav-icon">⚡</span><span class="nav-label">Charging</span></button>
+      <button class="nav-item active" onclick="showToast('Service')"><span class="nav-icon">🔧</span><span class="nav-label">Service</span></button>
+      <button class="nav-item" onclick="showToast('Profile')"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
+    </div>
+  </div>
+
+  <!-- ==================== MESSAGES 5.6 ==================== -->
+  <div class="page" id="page-messages">
+    <div class="page-header">
+      <button class="back-btn" onclick="navigateTo('home')">‹</button>
+      <span class="title">Messages</span>
+      <button class="right-btn" onclick="showModal('清空通知','确定要清空所有通知吗？')">🗑</button>
+    </div>
+    <div class="page-content" style="bottom: 64px;">
+      <div class="notif-list">
+        <!-- BR-5.6: Triggered when official account answer is approved -->
+        <div class="notif-item" onclick="navigateTo('detail')">
+          <div class="notif-header"><div class="notif-dot"></div><div class="notif-title">Question replied</div></div>
+          <div class="notif-body">Wayne has replied to your question. Please check if this resolves your issue. View Details&gt;</div>
+          <div class="notif-time">2 d ago</div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-header"><div class="notif-dot read"></div><div class="notif-title read">Question rejected</div></div>
+          <div class="notif-body">Your question has been rejected: contains sensitive words</div>
+          <div class="notif-time">2025-10-28 18:00</div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-header"><div class="notif-dot read"></div><div class="notif-title read">Reply rejected</div></div>
+          <div class="notif-body">Your reply has been rejected: contains sensitive words</div>
+          <div class="notif-time">2025-10-25 09:30</div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="showToast('GAC')"><span class="nav-icon">🚙</span><span class="nav-label">GAC</span></button>
+      <button class="nav-item" onclick="showToast('Charging')"><span class="nav-icon">⚡</span><span class="nav-label">Charging</span></button>
+      <button class="nav-item active" onclick="showToast('Service')"><span class="nav-icon">🔧</span><span class="nav-label">Service</span></button>
+      <button class="nav-item" onclick="showToast('Profile')"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const navStack = ['entry'];
+  function navigateTo(page) {
+    const map = { entry:'page-entry', home:'page-home', ask:'page-ask', detail:'page-detail', search:'page-search', messages:'page-messages' };
+    const targetEl = document.getElementById(map[page]);
+    if (!targetEl) return;
+
+    const currentPage = navStack[navStack.length - 1];
+    const currentEl = document.getElementById(map[currentPage]);
+    if (currentEl === targetEl) return;
+
+    const isBack = navStack.length > 1 && navStack[navStack.length - 2] === page;
+
+    // 清除之前的动画定时器，避免多个 setTimeout 竞争
+    if (window._pageTransitionTimer) {
+      clearTimeout(window._pageTransitionTimer);
+      window._pageTransitionTimer = null;
+    }
+    // 重置所有页面可能残留的 transition 覆盖
+    document.querySelectorAll('.page').forEach(function(p) { p.style.transition = ''; });
+
+    if (isBack) {
+      navStack.pop();
+      // 返回：目标页面直接到位（无动画），当前页面向右滑出
+      targetEl.classList.add('active');
+      targetEl.style.zIndex = '1';
+      targetEl.style.transition = 'none';
+      targetEl.style.transform = 'translateX(0)';
+      void targetEl.offsetWidth;
+      targetEl.style.transition = '';
+      if (currentEl) {
+        currentEl.classList.add('active');
+        currentEl.style.zIndex = '10';
+        void currentEl.offsetWidth;
+        currentEl.style.transform = 'translateX(100%)';
+      }
+      window._pageTransitionTimer = setTimeout(function() {
+        if (currentEl) { currentEl.classList.remove('active'); currentEl.style.transform = ''; currentEl.style.zIndex = ''; }
+        targetEl.style.transform = ''; targetEl.style.zIndex = '';
+        const sc = targetEl.querySelector('.page-content');
+        if (sc) sc.scrollTop = 0;
+        window._pageTransitionTimer = null;
+      }, 300);
+    } else {
+      navStack.push(page);
+      // 进入：目标页面从右侧滑入，覆盖当前页面
+      if (currentEl) {
+        currentEl.classList.add('active');
+        currentEl.style.zIndex = '1';
+      }
+      targetEl.classList.add('active');
+      targetEl.style.zIndex = '10';
+      // 先禁用 transition，瞬移到右侧初始位置
+      targetEl.style.transition = 'none';
+      targetEl.style.transform = 'translateX(100%)';
+      void targetEl.offsetWidth;
+      // 恢复 transition，再设置目标位置，触发动画
+      targetEl.style.transition = '';
+      targetEl.style.transform = 'translateX(0)';
+      window._pageTransitionTimer = setTimeout(function() {
+        if (currentEl) currentEl.classList.remove('active');
+        targetEl.style.transform = ''; targetEl.style.zIndex = '';
+        const sc = targetEl.querySelector('.page-content');
+        if (sc) sc.scrollTop = 0;
+        window._pageTransitionTimer = null;
+      }, 300);
+    }
+
+    // Reset detail page accept state when entering detail
+    if (page === 'detail') {
+      hasAccepted = true; // Demo: pre-set accepted state to show closed reply
+      document.querySelectorAll('.btn-accept').forEach((b, idx) => {
+        if (idx === 0) { b.classList.add('accepted'); b.textContent = '✓ Accepted'; b.style.display = ''; }
+        else { b.classList.remove('accepted'); b.textContent = 'Accept'; b.style.display = 'none'; }
+      });
+      const replyBar = document.getElementById('detail-reply-bar');
+      if (replyBar) replyBar.style.display = 'none';
+      document.querySelectorAll('.answer-footer .action, .reply-actions .action').forEach(el => {
+        if (el.textContent === 'Reply') el.style.display = 'none';
+      });
+    }
+  }
+  function switchTab(el, tab) {
+    document.querySelectorAll('.home-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    if (tab === 'my') {
+      showToast('该功能需要登录');
+    } else if (tab === 'hot') {
+      // BR-5.2-07: Hot tab access permission prompt demo
+      // In real app: check group config and login state
+      // showToast('该圈子仅限认证车主、授权车主、官方号访问');
+    }
+  }
+  function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
+  function showModal(title, text) { document.getElementById('m-title').textContent = title; document.getElementById('m-text').textContent = text; document.getElementById('modal').classList.add('show'); }
+  function hideModal() { document.getElementById('modal').classList.remove('show'); }
+  function confirmModal() { hideModal(); showToast('操作已确认'); }
+  function toggleVote(el) { el.classList.toggle('active'); const m = el.textContent.match(/(\d+)/); const n = m ? parseInt(m[1]) : 0; el.textContent = el.classList.contains('active') ? el.textContent.replace(n, n+1) : el.textContent.replace(n, n-1); }
+  /* BR-5.4-03: Only 1 answer can be accepted. BR-5.4-12: After accept, close all reply entries. */
+  let hasAccepted = false;
+  function toggleAccept(btn) {
+    if (hasAccepted && !btn.classList.contains('accepted')) {
+      showToast('仅能采纳1条回答');
+      return;
+    }
+    btn.classList.toggle('accepted');
+    const accepted = btn.classList.contains('accepted');
+    btn.textContent = accepted ? '✓ Accepted' : 'Accept';
+    if (accepted) {
+      hasAccepted = true;
+      showToast('已采纳回答');
+      // Hide all other Accept buttons
+      document.querySelectorAll('.btn-accept').forEach(b => {
+        if (b !== btn && !b.classList.contains('accepted')) b.style.display = 'none';
+      });
+      // BR-5.4-12: Close reply input bar after accept
+      const replyBar = document.getElementById('detail-reply-bar');
+      if (replyBar) replyBar.style.display = 'none';
+      // Hide all Reply actions
+      document.querySelectorAll('.answer-footer .action, .reply-actions .action').forEach(el => {
+        if (el.textContent === 'Reply') el.style.display = 'none';
+      });
+    } else {
+      hasAccepted = false;
+      // Restore other Accept buttons (demo only)
+      document.querySelectorAll('.btn-accept').forEach(b => { if (b !== btn) b.style.display = ''; });
+      const replyBar = document.getElementById('detail-reply-bar');
+      if (replyBar) replyBar.style.display = 'flex';
+      document.querySelectorAll('.answer-footer .action, .reply-actions .action').forEach(el => {
+        if (el.textContent === 'Reply') el.style.display = '';
+      });
+    }
+  }
+
+  /* ===== Home page scroll-driven background ===== */
+  (function() {
+    const homeContent = document.querySelector('#page-home .page-content');
+    const homeBg = document.querySelector('#page-home .home-top-bg');
+    if (!homeContent || !homeBg) return;
+
+    function updateHomeBg() {
+      const scrollY = homeContent.scrollTop;
+      const tabs = homeContent.querySelector('.home-tabs');
+      const threshold = tabs ? tabs.offsetTop : 200;
+
+      // 背景随内容向上移动
+      homeBg.style.transform = 'translateY(-' + scrollY + 'px)';
+
+      // 透明度按滚动量线性减少，到达 tabs 时完全透明
+      const opacity = Math.max(0, 1 - scrollY / threshold);
+      homeBg.style.opacity = opacity;
+    }
+
+    homeContent.addEventListener('scroll', updateHomeBg);
+    // 初始化一次
+    updateHomeBg();
+  })();
+</script>
+
+</body>
+</html>

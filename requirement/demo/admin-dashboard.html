@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GAC 运营管理后台 — Engineer Online</title>
+  <style>
+    /* ===== Reset ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 14px;
+      color: #333;
+      background: #f0f2f5;
+      overflow: hidden;
+    }
+    a { text-decoration: none; color: #009EFF; cursor: pointer; }
+    a:hover { text-decoration: underline; }
+    button { cursor: pointer; font-family: inherit; }
+
+    /* ===== Layout ===== */
+    .layout { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ===== Sidebar ===== */
+    .sidebar {
+      width: 208px;
+      background: #fff;
+      border-right: 1px solid #f0f0f0;
+      flex-shrink: 0;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-logo {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 18px;
+      font-weight: 700;
+      color: #191A1D;
+      letter-spacing: -0.5px;
+    }
+    .sidebar-logo svg { width: 28px; height: 28px; margin-right: 8px; }
+    .menu { padding: 8px 0; flex: 1; }
+    .menu-group {
+      margin-bottom: 4px;
+    }
+    .menu-group-title {
+      padding: 8px 16px 4px;
+      font-size: 12px;
+      color: #999;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 0 16px 0 24px;
+      height: 40px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: 14px;
+      color: #333;
+      border-left: 3px solid transparent;
+      position: relative;
+    }
+    .menu-item:hover { background: #f5f5f5; }
+    .menu-item.active {
+      background: #E6F7FF;
+      color: #009EFF;
+      border-left-color: #009EFF;
+      font-weight: 500;
+    }
+    .menu-item .icon {
+      width: 18px;
+      margin-right: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+    .menu-arrow {
+      margin-left: auto;
+      font-size: 11px;
+      color: #999;
+      transition: transform 0.2s;
+    }
+    .menu-arrow.open { transform: rotate(90deg); }
+    .submenu { display: none; }
+    .submenu.open { display: block; }
+    .submenu .menu-item { padding-left: 48px; height: 36px; font-size: 13px; }
+
+    /* ===== Main ===== */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ===== Header ===== */
+    .header {
+      height: 56px;
+      background: #fff;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .header-hamburger {
+      width: 32px; height: 32px;
+      display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px;
+      cursor: pointer; border-radius: 4px;
+    }
+    .header-hamburger:hover { background: #f5f5f5; }
+    .header-hamburger span { display: block; width: 16px; height: 2px; background: #333; border-radius: 1px; }
+    .header-region { font-size: 14px; color: #333; font-weight: 500; }
+    .header-right { display: flex; align-items: center; gap: 24px; }
+    .header-lang { font-size: 14px; color: #666; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .header-user { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: #333; }
+    .header-user .avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #ccc; display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: #fff;
+    }
+    .header-logout { font-size: 14px; color: #666; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+    /* ===== Content ===== */
+    .content { flex: 1; overflow-y: auto; padding: 16px 24px 24px; }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ===== Breadcrumb ===== */
+    .breadcrumb { font-size: 14px; color: #666; margin-bottom: 16px; }
+    .breadcrumb a { color: #009EFF; }
+    .breadcrumb .sep { margin: 0 8px; color: #999; }
+    .breadcrumb .current { color: #333; font-weight: 500; }
+
+    /* ===== Page Title ===== */
+    .page-title { font-size: 20px; font-weight: 500; color: #191A1D; margin-bottom: 16px; }
+
+    /* ===== Card ===== */
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px 24px;
+      margin-bottom: 16px;
+      border: 1px solid #f0f0f0;
+    }
+
+    /* ===== Filter Form ===== */
+    .filter-form { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 16px; }
+    .form-item { display: flex; flex-direction: column; gap: 4px; }
+    .form-item label { font-size: 12px; color: #666; }
+    .form-item input, .form-item select {
+      height: 32px; padding: 0 12px;
+      border: 1px solid #d9d9d9; border-radius: 4px;
+      font-size: 14px; color: #333; background: #fff;
+      outline: none; width: 100%;
+    }
+    .form-item input:focus, .form-item select:focus { border-color: #009EFF; }
+    .form-item input::placeholder { color: #bfbfbf; }
+    .filter-actions {
+      display: flex; justify-content: flex-end; gap: 8px;
+      margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;
+    }
+
+    /* ===== Buttons ===== */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      height: 32px; padding: 0 16px;
+      border-radius: 4px; font-size: 14px;
+      border: 1px solid transparent; outline: none;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .btn-primary { background: #009EFF; color: #fff; border-color: #009EFF; }
+    .btn-primary:hover { background: #40b3ff; border-color: #40b3ff; }
+    .btn-default { background: #fff; color: #333; border-color: #d9d9d9; }
+    .btn-default:hover { color: #009EFF; border-color: #009EFF; }
+    .btn-danger { background: #fff; color: #ff4d4f; border-color: #ff4d4f; }
+    .btn-danger:hover { background: #ff4d4f; color: #fff; }
+    .btn-sm { height: 24px; padding: 0 8px; font-size: 12px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ===== Toolbar ===== */
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .toolbar-left, .toolbar-right { display: flex; gap: 8px; align-items: center; }
+
+    /* ===== Table ===== */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead th {
+      background: #FAFAFA; font-weight: 500; color: #333;
+      padding: 12px 16px; text-align: left; border-bottom: 1px solid #f0f0f0;
+      white-space: nowrap;
+    }
+    thead th.center { text-align: center; }
+    tbody td {
+      padding: 12px 16px; border-bottom: 1px solid #f0f0f0;
+      color: #333; vertical-align: middle;
+    }
+    tbody tr:hover { background: #fafafa; }
+    tbody td.center { text-align: center; }
+
+    /* ===== Tags ===== */
+    .tag {
+      display: inline-flex; align-items: center;
+      height: 22px; padding: 0 8px; border-radius: 4px;
+      font-size: 12px; border: 1px solid transparent;
+    }
+    .tag-orange { color: #FAAD14; background: #FFFBE6; border-color: #FFE58F; }
+    .tag-green { color: #52C41A; background: #F6FFED; border-color: #B7EB8F; }
+    .tag-red { color: #FF4D4F; background: #FFF1F0; border-color: #FFA39E; }
+    .tag-gray { color: #999; background: #f5f5f5; border-color: #d9d9d9; }
+
+    /* ===== Switch ===== */
+    .switch {
+      display: inline-block; width: 32px; height: 18px;
+      background: #bfbfbf; border-radius: 9px;
+      position: relative; cursor: pointer; transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .switch.on { background: #009EFF; }
+    .switch::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 14px; height: 14px; background: #fff; border-radius: 50%;
+      transition: left 0.2s;
+    }
+    .switch.on::after { left: 16px; }
+
+    /* ===== Dropdown ===== */
+    .dropdown { position: relative; display: inline-block; }
+    .dropdown-menu {
+      position: absolute; top: 100%; right: 0;
+      background: #fff; border: 1px solid #f0f0f0;
+      border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      min-width: 140px; z-index: 1000;
+      display: none; margin-top: 4px;
+    }
+    .dropdown-menu.open { display: block; }
+    .dropdown-item {
+      padding: 8px 16px; font-size: 14px; color: #333;
+      cursor: pointer; white-space: nowrap;
+    }
+    .dropdown-item:hover { background: #f5f5f5; }
+    .dropdown-item.danger { color: #ff4d4f; }
+    .dropdown-item.danger:hover { background: #fff1f0; }
+    .dropdown-divider { height: 1px; background: #f0f0f0; margin: 4px 0; }
+
+    /* ===== Pagination ===== */
+    .pagination {
+      display: flex; justify-content: flex-end; align-items: center;
+      gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;
+    }
+    .pagination-btn {
+      min-width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid #d9d9d9; background: #fff; border-radius: 4px;
+      font-size: 13px; color: #333; cursor: pointer; padding: 0 8px;
+    }
+    .pagination-btn:hover { border-color: #009EFF; color: #009EFF; }
+    .pagination-btn.active { background: #009EFF; color: #fff; border-color: #009EFF; }
+    .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .pagination-info { font-size: 13px; color: #666; }
+
+    /* ===== Drawer ===== */
+    .drawer-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.45); z-index: 2000;
+      display: none;
+    }
+    .drawer-overlay.open { display: block; }
+    .drawer {
+      position: fixed; top: 0; right: -600px; width: 600px; height: 100%;
+      background: #fff; z-index: 2001;
+      box-shadow: -4px 0 16px rgba(0,0,0,0.1);
+      transition: right 0.3s ease;
+      display: flex; flex-direction: column;
+    }
+    .drawer.open { right: 0; }
+    .drawer-header {
+      height: 56px; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #f0f0f0; font-size: 16px; font-weight: 500;
+    }
+    .drawer-close { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: #999; border-radius: 4px; }
+    .drawer-close:hover { background: #f5f5f5; color: #333; }
+    .drawer-body { flex: 1; overflow-y: auto; padding: 24px; }
+    .drawer-footer {
+      padding: 16px 24px; border-top: 1px solid #f0f0f0;
+      display: flex; justify-content: flex-end; gap: 8px;
+    }
+
+    /* ===== Modal ===== */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.45); z-index: 3000;
+      display: none; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff; border-radius: 8px; width: 480px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      display: flex; flex-direction: column;
+    }
+    .modal-header {
+      padding: 20px 24px 0; font-size: 16px; font-weight: 500;
+    }
+    .modal-body { padding: 16px 24px; }
+    .modal-footer {
+      padding: 16px 24px; border-top: 1px solid #f0f0f0;
+      display: flex; justify-content: flex-end; gap: 8px;
+    }
+    .modal-textarea {
+      width: 100%; min-height: 100px; padding: 8px 12px;
+      border: 1px solid #d9d9d9; border-radius: 4px;
+      font-size: 14px; resize: vertical; outline: none;
+    }
+    .modal-textarea:focus { border-color: #009EFF; }
+
+    /* ===== Checkbox ===== */
+    .checkbox { width: 16px; height: 16px; cursor: pointer; }
+
+    /* ===== Form in drawer ===== */
+    .form-row { margin-bottom: 20px; }
+    .form-row label { display: block; font-size: 14px; color: #333; margin-bottom: 6px; }
+    .form-row label .required { color: #ff4d4f; margin-right: 4px; }
+    .form-row input, .form-row select, .form-row textarea {
+      width: 100%; padding: 8px 12px;
+      border: 1px solid #d9d9d9; border-radius: 4px;
+      font-size: 14px; outline: none;
+    }
+    .form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color: #009EFF; }
+    .form-row textarea { min-height: 120px; resize: vertical; }
+
+    /* ===== Reply panel ===== */
+    .reply-item { padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+    .reply-item:last-child { border-bottom: none; }
+    .reply-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .reply-avatar { width: 28px; height: 28px; border-radius: 50%; background: #009EFF; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+    .reply-author { font-weight: 500; font-size: 14px; }
+    .reply-badge { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: #e6f7ff; color: #009EFF; }
+    .reply-content { font-size: 14px; color: #555; line-height: 1.6; margin-left: 36px; }
+    .reply-meta { display: flex; align-items: center; gap: 16px; margin-top: 6px; margin-left: 36px; font-size: 12px; color: #999; }
+
+    /* ===== Empty ===== */
+    .empty { text-align: center; padding: 48px; color: #999; }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-20px);
+      background: #333; color: #fff; padding: 10px 24px; border-radius: 4px;
+      font-size: 14px; z-index: 5000; opacity: 0; transition: all 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { background: #52C41A; }
+    .toast.error { background: #ff4d4f; }
+
+    /* ===== Misc ===== */
+    .text-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px; }
+    .flex { display: flex; }
+    .gap-8 { gap: 8px; }
+    .mt-16 { margin-top: 16px; }
+
+    /* ===== Checkbox Group ===== */
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 16px; }
+    .checkbox-group label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; color: #333; }
+    .checkbox-group input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+
+    /* ===== Image Upload ===== */
+    .image-upload {
+      width: 120px; height: 120px; border: 2px dashed #d9d9d9; border-radius: 8px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; color: #999; transition: all 0.15s; background: #fafafa;
+    }
+    .image-upload:hover { border-color: #009EFF; color: #009EFF; }
+    .image-upload .plus { font-size: 28px; line-height: 1; font-weight: 300; }
+    .image-upload.has-image { border-style: solid; border-color: #d9d9d9; padding: 4px; }
+    .image-upload.has-image img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+
+    /* ===== Input with button row ===== */
+    .input-btn-row { display: flex; align-items: center; gap: 8px; }
+    .input-btn-row input, .input-btn-row select, .input-btn-row textarea { flex: 1; }
+    .lang-btn {
+      display: inline-flex; align-items: center; height: 32px; padding: 0 12px;
+      border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; color: #666;
+      background: #fff; cursor: pointer; white-space: nowrap;
+    }
+    .lang-btn:hover { border-color: #009EFF; color: #009EFF; }
+
+    /* ===== Cover thumbnail ===== */
+    .cover-thumb { width: 48px; height: 48px; border-radius: 4px; object-fit: cover; background: #f0f0f0; display: block; }
+
+    /* ===== Section label in drawer ===== */
+    .section-label { font-size: 14px; font-weight: 500; color: #333; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+      GAC
+    </div>
+    <div class="menu">
+      <div class="menu-group">
+        <div class="menu-group-title">首页</div>
+        <div class="menu-item" data-page="dashboard"><span class="icon">🏠</span>首页</div>
+      </div>
+      <div class="menu-group">
+        <div class="menu-group-title">公共模块</div>
+        <div class="menu-item" data-page="users"><span class="icon">👤</span>用户管理</div>
+      </div>
+      <div class="menu-group">
+        <div class="menu-group-title">内容管理</div>
+        <div class="menu-item active" data-page="questions"><span class="icon">❓</span>问题管理</div>
+        <div class="menu-item" data-page="answers"><span class="icon">💬</span>回答管理</div>
+        <div class="menu-item" data-page="groups"><span class="icon">🏷️</span>圈子管理</div>
+      </div>
+      <div class="menu-group">
+        <div class="menu-group-title">系统管理</div>
+        <div class="menu-item" data-page="settings"><span class="icon">⚙️</span>系统设置</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <div class="header-hamburger"><span></span><span></span><span></span></div>
+        <span class="header-region">中国香港</span>
+      </div>
+      <div class="header-right">
+        <span class="header-lang">🌐 简体中文</span>
+        <div class="header-user"><div class="avatar">A</div><span>admin</span></div>
+        <span class="header-logout">🚪 退出登录</span>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- ===== Questions ===== -->
+      <div class="page active" id="page-questions">
+        <div class="breadcrumb">
+          <a onclick="switchPage('dashboard')">首页</a><span class="sep">/</span><span>内容管理</span><span class="sep">/</span><span class="current">问题管理</span>
+        </div>
+        <h1 class="page-title">问题管理</h1>
+
+        <div class="card">
+          <div class="filter-form">
+            <div class="form-item"><label>标题</label><input type="text" placeholder="模糊匹配" id="q-filter-keyword"></div>
+            <div class="form-item"><label>问题ID</label><input type="text" placeholder="精确匹配" id="q-filter-id"></div>
+            <div class="form-item"><label>所属圈子</label><select id="q-filter-group"><option value="">全部</option><option>Engineer Online</option><option>Product Community</option></select></div>
+            <div class="form-item"><label>审核状态</label><select id="q-filter-status"><option value="">全部</option><option value="PENDING">待审核</option><option value="APPROVED">已通过</option><option value="REJECTED">已驳回</option></select></div>
+            <div class="form-item"><label>公开状态</label><select id="q-filter-public"><option value="">全部</option><option value="PUBLIC">公开</option><option value="PRIVATE">不公开</option></select></div>
+            <div class="form-item"><label>发帖人昵称</label><input type="text" placeholder="精确搜索" id="q-filter-poster"></div>
+            <div class="form-item"><label>车系</label><select id="q-filter-series"><option value="">全部</option><option>AION V</option><option>AION Y</option><option>AION S</option></select></div>
+            <div class="form-item"><label>创建时间</label><input type="text" placeholder="请选择日期范围" id="q-filter-date"></div>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-default" onclick="resetQuestionFilter()">重置</button>
+            <button class="btn btn-primary" onclick="searchQuestions()">🔍 搜索</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <button class="btn btn-default" id="q-batch-approve" disabled onclick="batchQuestionAction('approve')">审核通过</button>
+              <button class="btn btn-danger" id="q-batch-reject" disabled onclick="batchQuestionAction('reject')">审核驳回</button>
+              <button class="btn btn-danger" id="q-batch-delete" disabled onclick="batchQuestionAction('delete')">批量删除</button>
+              <button class="btn btn-primary" id="q-batch-push-uop" disabled onclick="batchQuestionAction('push-uop')">推送到UOP</button>
+            </div>
+            <div class="toolbar-right"><button class="btn btn-default">自定义列</button></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:40px"><input type="checkbox" class="checkbox" id="q-check-all" onchange="toggleQuestionSelectAll()"></th>
+                  <th>排序</th>
+                  <th>ID</th>
+                  <th>标题</th>
+                  <th>来源/圈子</th>
+                  <th>发帖人</th>
+                  <th>创建时间</th>
+                  <th>审核状态</th>
+                  <th>公开状态</th>
+                  <th>采纳状态</th>
+                  <th>推送状态</th>
+                  <th class="center">热门</th>
+                  <th class="center">回答</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="q-table-body"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="q-pagination"></div>
+        </div>
+      </div>
+
+      <!-- ===== Answers ===== -->
+      <div class="page" id="page-answers">
+        <div class="breadcrumb">
+          <a onclick="switchPage('dashboard')">首页</a><span class="sep">/</span><span>内容管理</span><span class="sep">/</span><span class="current">回答管理</span>
+        </div>
+        <h1 class="page-title">回答管理</h1>
+
+        <div class="card">
+          <div class="filter-form">
+            <div class="form-item"><label>内容</label><input type="text" placeholder="模糊匹配" id="a-filter-keyword"></div>
+            <div class="form-item"><label>回复ID</label><input type="text" placeholder="精确匹配" id="a-filter-id"></div>
+            <div class="form-item"><label>审核状态</label><select id="a-filter-status"><option value="">全部</option><option value="PENDING">待审核</option><option value="APPROVED">已通过</option><option value="REJECTED">已驳回</option></select></div>
+            <div class="form-item"><label>UOP 同步状态</label><select id="a-filter-sync"><option value="">全部</option><option value="NOT_SYNCED">未同步</option><option value="SYNCED">已同步</option><option value="SYNC_FAILED">同步失败</option></select></div>
+            <div class="form-item"><label>回复人昵称</label><input type="text" placeholder="精确搜索" id="a-filter-replier"></div>
+            <div class="form-item"><label>回复人身份</label><select id="a-filter-type"><option value="">全部</option><option value="REGULAR">普通用户</option><option value="OFFICIAL_ENGINEER">官方号 Engineer</option><option value="OFFICIAL_PM">官方号 Product Manager</option></select></div>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-default" onclick="resetAnswerFilter()">重置</button>
+            <button class="btn btn-primary" onclick="searchAnswers()">🔍 搜索</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <button class="btn btn-default" id="a-batch-approve" disabled onclick="batchAnswerAction('approve')">审核通过</button>
+              <button class="btn btn-danger" id="a-batch-reject" disabled onclick="batchAnswerAction('reject')">审核驳回</button>
+              <button class="btn btn-danger" id="a-batch-delete" disabled onclick="batchAnswerAction('delete')">批量删除</button>
+              <button class="btn btn-primary" id="a-batch-push-uop" disabled onclick="batchAnswerAction('push-uop')">推送UOP</button>
+            </div>
+            <div class="toolbar-right"><button class="btn btn-default">自定义列</button></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:40px"><input type="checkbox" class="checkbox" id="a-check-all" onchange="toggleAnswerSelectAll()"></th>
+                  <th>回复ID</th>
+                  <th>内容</th>
+                  <th>回复人</th>
+                  <th>所属圈子</th>
+                  <th>回复时间</th>
+                  <th>审核状态</th>
+                  <th>采纳</th>
+                  <th>UOP 同步状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="a-table-body"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="a-pagination"></div>
+        </div>
+      </div>
+
+      <!-- ===== User Management ===== -->
+      <div class="page" id="page-users">
+        <div class="breadcrumb">
+          <a onclick="switchPage('dashboard')">首页</a><span class="sep">/</span><span>公共模块</span><span class="sep">/</span><span class="current">用户管理</span>
+        </div>
+        <h1 class="page-title">用户管理</h1>
+
+        <div class="card">
+          <div class="filter-form">
+            <div class="form-item"><label>用户ID</label><input type="text" placeholder="精确匹配" id="u-filter-id"></div>
+            <div class="form-item"><label>昵称</label><input type="text" placeholder="模糊匹配" id="u-filter-nickname"></div>
+            <div class="form-item"><label>手机号</label><input type="text" placeholder="精确匹配" id="u-filter-phone"></div>
+            <div class="form-item"><label>邮箱</label><input type="text" placeholder="精确匹配" id="u-filter-email"></div>
+            <div class="form-item"><label>官方号名称</label><select id="u-filter-official"><option value="">全部</option><option value="ENGINEER_GAC">GAC Engineer</option><option value="PM_GAC">GAC Product Manager</option></select></div>
+            <div class="form-item"><label>用户身份</label><select id="u-filter-type"><option value="">全部</option><option value="REGULAR">普通用户</option><option value="OFFICIAL">官方号</option></select></div>
+            <div class="form-item"><label>注册时间</label><input type="text" placeholder="请选择日期范围" id="u-filter-date"></div>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-default" onclick="resetUserFilter()">重置</button>
+            <button class="btn btn-primary" onclick="searchUsers()">🔍 搜索</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>用户ID</th>
+                  <th>头像</th>
+                  <th>昵称</th>
+                  <th>手机号</th>
+                  <th>邮箱</th>
+                  <th>用户身份</th>
+                  <th>官方号名称</th>
+                  <th>注册时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="u-table-body"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="u-pagination"></div>
+        </div>
+      </div>
+
+      <!-- ===== Placeholder pages ===== -->
+      <div class="page" id="page-dashboard">
+        <div class="breadcrumb"><span class="current">首页</span></div>
+        <h1 class="page-title">数据看板</h1>
+        <div class="card"><div class="empty"><div class="empty-icon">📊</div><div>数据看板占位页面</div></div></div>
+      </div>
+      <!-- ===== Groups ===== -->
+      <div class="page" id="page-groups">
+        <div class="breadcrumb">
+          <a onclick="switchPage('dashboard')">首页</a><span class="sep">/</span><span>平台管理</span><span class="sep">/</span><span class="current">圈子管理</span>
+        </div>
+        <h1 class="page-title">圈子管理</h1>
+
+        <div class="card">
+          <div class="filter-form">
+            <div class="form-item"><label>圈子名称</label><input type="text" placeholder="模糊匹配" id="g-filter-name"></div>
+            <div class="form-item"><label>圈子类型</label><select id="g-filter-type"><option value="">全部</option><option value="ENGINEER_ONLINE">Engineer Online</option><option value="PRODUCT_COMMUNITY">Product Community</option><option value="MODEL">Model</option><option value="OTHER">Other</option></select></div>
+            <div class="form-item"><label>启用状态</label><select id="g-filter-status"><option value="">全部</option><option value="true">启用</option><option value="false">停用</option></select></div>
+            <div class="form-item"><label>创建时间</label><input type="text" placeholder="请选择日期范围" id="g-filter-date"></div>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-default" onclick="resetGroupFilter()">重置</button>
+            <button class="btn btn-primary" onclick="searchGroups()">🔍 搜索</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <button class="btn btn-primary" onclick="openGroupDrawer('create')">+ 创建</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="center">排序</th>
+                  <th>ID</th>
+                  <th>圈子名称</th>
+                  <th>类型</th>
+                  <th>封面</th>
+                  <th>描述</th>
+                  <th class="center">内容数</th>
+                  <th class="center">回复数</th>
+                  <th class="center">启用状态</th>
+                  <th>创建时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="g-table-body"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="g-pagination"></div>
+        </div>
+      </div>
+      <div class="page" id="page-settings">
+        <div class="breadcrumb"><span class="current">系统设置</span></div>
+        <h1 class="page-title">系统设置</h1>
+        <div class="card"><div class="empty"><div class="empty-icon">⚙️</div><div>系统设置占位页面</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Drawer: Question Detail/Edit -->
+<div class="drawer-overlay" id="q-drawer-overlay" onclick="closeQuestionDrawer()"></div>
+<div class="drawer" id="q-drawer">
+  <div class="drawer-header"><span id="q-drawer-title">查看问题</span><div class="drawer-close" onclick="closeQuestionDrawer()">×</div></div>
+  <div class="drawer-body">
+    <div class="form-row"><label><span class="required">*</span>标题</label><input type="text" id="q-drawer-title-input"></div>
+    <div class="form-row"><label>内容</label><textarea id="q-drawer-content"></textarea></div>
+    <div class="form-row"><label><span class="required">*</span>圈子</label><select id="q-drawer-group"><option>Engineer Online</option><option>Product Community</option></select></div>
+    <div class="form-row"><label><span class="required">*</span>发帖人</label><input type="text" id="q-drawer-poster"></div>
+    <div class="form-row"><label>审核状态</label><select id="q-drawer-status"><option value="PENDING">待审核</option><option value="APPROVED">已通过</option><option value="REJECTED">已驳回</option></select></div>
+    <div class="form-row" style="display:flex;gap:24px;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="q-drawer-hot"> 热门</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="q-drawer-public"> 公开</label>
+    </div>
+  </div>
+  <div class="drawer-footer" id="q-drawer-footer">
+    <button class="btn btn-default" onclick="closeQuestionDrawer()">取消</button>
+    <button class="btn btn-primary" onclick="saveQuestion()">保存</button>
+  </div>
+</div>
+
+<!-- Drawer: Reply Panel -->
+<div class="drawer-overlay" id="r-drawer-overlay" onclick="closeReplyDrawer()"></div>
+<div class="drawer" id="r-drawer" style="width:520px;">
+  <div class="drawer-header"><span id="r-drawer-title">查看回复</span><div class="drawer-close" onclick="closeReplyDrawer()">×</div></div>
+  <div class="drawer-body" id="r-drawer-body"></div>
+</div>
+
+<!-- Drawer: Group Create/Edit/View -->
+<div class="drawer-overlay" id="g-drawer-overlay" onclick="closeGroupDrawer()"></div>
+<div class="drawer" id="g-drawer">
+  <div class="drawer-header"><span id="g-drawer-title">新建圈子</span><div class="drawer-close" onclick="closeGroupDrawer()">×</div></div>
+  <div class="drawer-body">
+    <!-- 圈子类型 -->
+    <div class="form-row">
+      <label><span class="required">*</span>圈子类型</label>
+      <select id="g-drawer-type">
+        <option value="">请选择</option>
+        <option value="ENGINEER_ONLINE">Engineer Online</option>
+        <option value="PRODUCT_COMMUNITY">Product Community</option>
+        <option value="MODEL">Model</option>
+        <option value="OTHER">Other</option>
+      </select>
+    </div>
+    <!-- 名称 -->
+    <div class="form-row">
+      <label><span class="required">*</span>名称</label>
+      <div class="input-btn-row">
+        <input type="text" id="g-drawer-name" placeholder="请输入圈子名称">
+        <button class="lang-btn" onclick="toast('多语言功能演示', 'success')">+ Lang</button>
+      </div>
+    </div>
+    <!-- 描述 -->
+    <div class="form-row">
+      <label><span class="required">*</span>描述</label>
+      <div class="input-btn-row">
+        <textarea id="g-drawer-desc" placeholder="请输入圈子描述" style="min-height:80px;"></textarea>
+        <button class="lang-btn" onclick="toast('多语言功能演示', 'success')" style="align-self:flex-start;margin-top:4px;">+ Lang</button>
+      </div>
+    </div>
+    <!-- 封面 -->
+    <div class="form-row">
+      <label>封面</label>
+      <div class="image-upload" id="g-drawer-cover" onclick="toast('图片上传功能演示', 'success')">
+        <span class="plus">+</span>
+        <span class="hint">上传封面</span>
+      </div>
+    </div>
+    <!-- 功能启用 -->
+    <div class="form-row">
+      <label>功能启用</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="reply" class="g-drawer-feature"> 回复</label>
+        <label><input type="checkbox" value="image" class="g-drawer-feature"> 发图片</label>
+        <label><input type="checkbox" value="video" class="g-drawer-feature"> 发视频</label>
+        <label><input type="checkbox" value="vehicle" class="g-drawer-feature"> 选择车辆</label>
+        <label><input type="checkbox" value="mileage" class="g-drawer-feature"> 车辆累计公里数</label>
+      </div>
+    </div>
+    <!-- 访问权限 -->
+    <div class="form-row">
+      <label><span class="required">*</span>访问权限</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="all" class="g-drawer-access"> 所有用户</label>
+        <label><input type="checkbox" value="car_owner" class="g-drawer-access"> 车主用户</label>
+        <label><input type="checkbox" value="authorized_owner" class="g-drawer-access"> 授权车主</label>
+        <label><input type="checkbox" value="official" class="g-drawer-access"> 官方号</label>
+      </div>
+    </div>
+    <!-- 发表权限 -->
+    <div class="form-row">
+      <label><span class="required">*</span>发表权限</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="all" class="g-drawer-post"> 所有用户</label>
+        <label><input type="checkbox" value="car_owner" class="g-drawer-post"> 车主用户</label>
+        <label><input type="checkbox" value="authorized_owner" class="g-drawer-post"> 授权车主</label>
+        <label><input type="checkbox" value="official" class="g-drawer-post"> 官方号</label>
+      </div>
+    </div>
+    <!-- 回复权限 -->
+    <div class="form-row">
+      <label><span class="required">*</span>回复权限</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="all" class="g-drawer-reply"> 所有用户</label>
+        <label><input type="checkbox" value="car_owner" class="g-drawer-reply"> 车主用户</label>
+        <label><input type="checkbox" value="authorized_owner" class="g-drawer-reply"> 授权车主</label>
+        <label><input type="checkbox" value="official" class="g-drawer-reply"> 官方号</label>
+        <label><input type="checkbox" value="author" class="g-drawer-reply"> 作者</label>
+      </div>
+    </div>
+    <!-- 追问权限 -->
+    <div class="form-row">
+      <label><span class="required">*</span>追问权限</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="all" class="g-drawer-followup"> 所有用户</label>
+        <label><input type="checkbox" value="car_owner" class="g-drawer-followup"> 车主用户</label>
+        <label><input type="checkbox" value="authorized_owner" class="g-drawer-followup"> 授权车主</label>
+        <label><input type="checkbox" value="official" class="g-drawer-followup"> 官方号</label>
+        <label><input type="checkbox" value="author" class="g-drawer-followup"> 作者</label>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-footer" id="g-drawer-footer">
+    <button class="btn btn-default" onclick="closeGroupDrawer()">取消</button>
+    <button class="btn btn-primary" onclick="saveGroup()">保存</button>
+  </div>
+</div>
+
+<!-- Modal: Reject -->
+<div class="modal-overlay" id="reject-modal" onclick="if(event.target===this)closeRejectModal()">
+  <div class="modal">
+    <div class="modal-header">审核驳回</div>
+    <div class="modal-body">
+      <div class="form-row"><label><span class="required">*</span>驳回原因</label><textarea class="modal-textarea" id="reject-reason" placeholder="请填写驳回原因，将通知发布者"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeRejectModal()">取消</button>
+      <button class="btn btn-primary" onclick="confirmReject()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: User Detail -->
+<div class="modal-overlay" id="user-detail-modal" onclick="if(event.target===this)closeUserDetailModal()">
+  <div class="modal" style="width:520px;">
+    <div class="modal-header">用户详情</div>
+    <div class="modal-body">
+      <div class="form-row"><label>用户ID</label><div id="user-detail-id" style="font-size:14px;color:#333;"></div></div>
+      <div class="form-row"><label>昵称</label><div id="user-detail-nickname" style="font-size:14px;color:#333;"></div></div>
+      <div class="form-row"><label>手机号</label><div id="user-detail-phone" style="font-size:14px;color:#333;"></div></div>
+      <div class="form-row"><label>邮箱</label><div id="user-detail-email" style="font-size:14px;color:#333;"></div></div>
+      <div class="form-row"><label>用户身份</label><div id="user-detail-type" style="font-size:14px;color:#333;"></div></div>
+      <div class="form-row"><label>官方号名称</label><div id="user-detail-official" style="font-size:14px;color:#333;"></div></div>
+      <div class="form-row"><label>注册时间</label><div id="user-detail-created" style="font-size:14px;color:#333;"></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeUserDetailModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Set Official -->
+<div class="modal-overlay" id="set-official-modal" onclick="if(event.target===this)closeSetOfficialModal()">
+  <div class="modal">
+    <div class="modal-header">设为官方号</div>
+    <div class="modal-body">
+      <div class="form-row"><label>用户昵称</label><div id="set-official-nickname" style="font-size:14px;color:#333;font-weight:500;"></div></div>
+      <div class="form-row">
+        <label><span class="required">*</span>官方号名称</label>
+        <select id="set-official-select" style="width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:14px;">
+          <option value="">请选择</option>
+          <option value="ENGINEER_GAC">GAC Engineer</option>
+          <option value="PM_GAC">GAC Product Manager</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeSetOfficialModal()">取消</button>
+      <button class="btn btn-primary" onclick="confirmSetOfficial()">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== Data ===== */
+const questions = [
+  { id: 12345, sortOrder: 0, title: 'AION V 仪表盘出现故障灯怎么处理？', groupName: 'Engineer Online', posterNickname: 'on***My', posterRole: 'CAR_OWNER', createdAt: '2026-04-28 10:30:00', reviewStatus: 'PENDING', publicStatus: 'PUBLIC', acceptStatus: 'UNACCEPTED', pushStatus: 'NOT_PUSHED', isHot: false, answerCount: 0, viewCount: 12 },
+  { id: 12346, sortOrder: 0, title: '车辆充电时发热严重，是否正常？', groupName: 'Engineer Online', posterNickname: 'Th***88', posterRole: 'CAR_OWNER', createdAt: '2026-04-28 09:15:00', reviewStatus: 'PENDING', publicStatus: 'PUBLIC', acceptStatus: 'UNACCEPTED', pushStatus: 'NOT_PUSHED', isHot: false, answerCount: 2, viewCount: 45 },
+  { id: 12347, sortOrder: 1, title: 'AION Y 的续航在实际使用中能到多少？', groupName: 'Engineer Online', posterNickname: 'Li***23', posterRole: 'AUTHORIZED_OWNER', createdAt: '2026-04-27 18:22:00', reviewStatus: 'APPROVED', publicStatus: 'PUBLIC', acceptStatus: 'ACCEPTED', pushStatus: 'PUSHED', isHot: true, answerCount: 8, viewCount: 320 },
+  { id: 12348, sortOrder: 0, title: '车机系统升级后蓝牙连接不稳定', groupName: 'Engineer Online', posterNickname: 'Wa***ne', posterRole: 'CAR_OWNER', createdAt: '2026-04-27 14:10:00', reviewStatus: 'APPROVED', publicStatus: 'PUBLIC', acceptStatus: 'UNACCEPTED', pushStatus: 'PUSHED', isHot: false, answerCount: 3, viewCount: 89 },
+  { id: 12349, sortOrder: 0, title: '关于AION S Plus的保养周期问题', groupName: 'Product Community', posterNickname: 'Ch***en', posterRole: 'REGULAR', createdAt: '2026-04-27 11:05:00', reviewStatus: 'REJECTED', publicStatus: 'PRIVATE', acceptStatus: 'UNACCEPTED', pushStatus: 'NOT_PUSHED', isHot: false, answerCount: 0, viewCount: 5 },
+  { id: 12350, sortOrder: 0, title: '充电桩安装需要准备哪些材料？', groupName: 'Engineer Online', posterNickname: 'Ka***da', posterRole: 'CAR_OWNER', createdAt: '2026-04-26 20:45:00', reviewStatus: 'APPROVED', publicStatus: 'PUBLIC', acceptStatus: 'ACCEPTED', pushStatus: 'PUSH_FAILED', isHot: false, answerCount: 5, viewCount: 156 },
+  { id: 12351, sortOrder: 0, title: '新车异味大，有什么快速去除方法？', groupName: 'Engineer Online', posterNickname: 'Pa***lo', posterRole: 'CAR_OWNER', createdAt: '2026-04-26 16:30:00', reviewStatus: 'APPROVED', publicStatus: 'PUBLIC', acceptStatus: 'UNACCEPTED', pushStatus: 'PUSHED', isHot: false, answerCount: 12, viewCount: 512 },
+  { id: 12352, sortOrder: 0, title: 'AION V Plus支持对外放电吗？', groupName: 'Engineer Online', posterNickname: 'Jo***sh', posterRole: 'AUTHORIZED_OWNER', createdAt: '2026-04-26 10:00:00', reviewStatus: 'PENDING', publicStatus: 'PUBLIC', acceptStatus: 'UNACCEPTED', pushStatus: 'NOT_PUSHED', isHot: false, answerCount: 0, viewCount: 23 },
+];
+
+const answers = [
+  { id: 55001, content: '您好，黄色故障灯通常表示系统警告，建议先重启车辆...', replierNickname: 'Wayne', replierType: 'OFFICIAL_PM', groupName: 'Engineer Online', createdAt: '2026-04-28 10:35:00', reviewStatus: 'APPROVED', isAccepted: false, syncStatus: 'SYNCED', upvoteCount: 12, downvoteCount: 1 },
+  { id: 55002, content: '充电发热在一定范围内是正常的，但如果超过45度建议...', replierNickname: 'David', replierType: 'OFFICIAL_ENGINEER', groupName: 'Engineer Online', createdAt: '2026-04-28 09:20:00', reviewStatus: 'APPROVED', isAccepted: true, syncStatus: 'SYNCED', upvoteCount: 28, downvoteCount: 0 },
+  { id: 55003, content: 'AION Y标准续航版NEDC 500km，实际城市路况约...', replierNickname: 'Sarah', replierType: 'OFFICIAL_ENGINEER', groupName: 'Engineer Online', createdAt: '2026-04-27 19:00:00', reviewStatus: 'APPROVED', isAccepted: false, syncStatus: 'SYNCED', upvoteCount: 15, downvoteCount: 2 },
+  { id: 55004, content: '您可以尝试删除蓝牙配对后重新连接，同时确认...', replierNickname: 'Mike', replierType: 'OFFICIAL_ENGINEER', groupName: 'Engineer Online', createdAt: '2026-04-27 15:30:00', reviewStatus: 'PENDING', isAccepted: false, syncStatus: 'NOT_SYNCED', upvoteCount: 0, downvoteCount: 0 },
+  { id: 55005, content: '这个问题建议咨询当地4S店，可能需要专业诊断...', replierNickname: 'Tom', replierType: 'REGULAR', groupName: 'Engineer Online', createdAt: '2026-04-27 12:00:00', reviewStatus: 'APPROVED', isAccepted: false, syncStatus: 'NOT_SYNCED', upvoteCount: 3, downvoteCount: 1 },
+  { id: 55006, content: '安装家用充电桩需要：1.物业许可证明 2.车位产权...', replierNickname: 'Jenny', replierType: 'OFFICIAL_PM', groupName: 'Engineer Online', createdAt: '2026-04-26 21:00:00', reviewStatus: 'APPROVED', isAccepted: true, syncStatus: 'SYNC_FAILED', upvoteCount: 45, downvoteCount: 0 },
+  { id: 55007, content: '可以试试活性炭包+通风，一般2-3周就能明显...', replierNickname: 'Alex', replierType: 'OFFICIAL_ENGINEER', groupName: 'Engineer Online', createdAt: '2026-04-26 17:00:00', reviewStatus: 'REJECTED', isAccepted: false, syncStatus: 'NOT_SYNCED', upvoteCount: 0, downvoteCount: 0 },
+];
+
+const replyData = [
+  { id: 1, content: '建议先检查仪表盘设置菜单，看是否有故障码详情...', replierNickname: 'Wayne', replierType: 'OFFICIAL_PM', createdAt: '2026-04-28 11:00:00', isAccepted: false, upvoteCount: 5, downvoteCount: 0 },
+  { id: 2, content: '如果是黄色发动机故障灯，通常是排放系统警告...', replierNickname: 'David', replierType: 'OFFICIAL_ENGINEER', createdAt: '2026-04-28 12:30:00', isAccepted: true, upvoteCount: 12, downvoteCount: 1 },
+];
+
+let qSelected = new Set();
+let aSelected = new Set();
+let currentDrawerQuestion = null;
+let rejectTarget = null;
+let rejectType = null;
+
+/* ===== User Data ===== */
+const users = [
+  { id: 88001, nickname: 'Wayne', avatar: 'https://cdn.example.com/avatar/wayne.jpg', phone: '138****5678', email: 'wa***@example.com', userType: 'OFFICIAL', officialNameCode: 'ENGINEER_GAC', officialName: 'GAC Engineer', createdAt: '2026-04-26 10:35:00' },
+  { id: 88002, nickname: 'David', avatar: '', phone: '139****1234', email: 'da***@example.com', userType: 'OFFICIAL', officialNameCode: 'PM_GAC', officialName: 'GAC Product Manager', createdAt: '2026-04-25 14:20:00' },
+  { id: 88003, nickname: 'Tom', avatar: '', phone: '137****9012', email: 'to***@example.com', userType: 'REGULAR', officialNameCode: null, officialName: null, createdAt: '2026-04-24 09:10:00' },
+  { id: 88004, nickname: 'Sarah', avatar: '', phone: '136****3456', email: 'sa***@example.com', userType: 'OFFICIAL', officialNameCode: 'ENGINEER_GAC', officialName: 'GAC Engineer', createdAt: '2026-04-23 16:45:00' },
+  { id: 88005, nickname: 'Alex', avatar: '', phone: '135****7890', email: 'al***@example.com', userType: 'REGULAR', officialNameCode: null, officialName: null, createdAt: '2026-04-22 11:30:00' },
+  { id: 88006, nickname: 'Jenny', avatar: '', phone: '134****2468', email: 'je***@example.com', userType: 'REGULAR', officialNameCode: null, officialName: null, createdAt: '2026-04-21 08:00:00' },
+];
+let currentUserDetail = null;
+
+/* ===== Utils ===== */
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + (type || '');
+  setTimeout(() => el.classList.add('show'), 10);
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function statusText(s) { return { PENDING: '待审核', APPROVED: '已通过', REJECTED: '已驳回' }[s] || s; }
+function statusTag(s) {
+  const cls = { PENDING: 'tag-orange', APPROVED: 'tag-green', REJECTED: 'tag-red' }[s] || 'tag-gray';
+  return `<span class="tag ${cls}">${statusText(s)}</span>`;
+}
+function syncText(s) { return { NOT_SYNCED: '未同步', SYNCED: '已同步', SYNC_FAILED: '同步失败' }[s] || s; }
+function syncTag(s) {
+  const cls = { NOT_SYNCED: 'tag-gray', SYNCED: 'tag-green', SYNC_FAILED: 'tag-red' }[s] || 'tag-gray';
+  return `<span class="tag ${cls}">${syncText(s)}</span>`;
+}
+function pushText(s) { return { NOT_PUSHED: '未推送', PUSHED: '已推送', PUSH_FAILED: '推送失败', UPDATE_FAILED: '更新失败' }[s] || s; }
+function pushTag(s) {
+  const cls = { NOT_PUSHED: 'tag-gray', PUSHED: 'tag-green', PUSH_FAILED: 'tag-red', UPDATE_FAILED: 'tag-red' }[s] || 'tag-gray';
+  return `<span class="tag ${cls}">${pushText(s)}</span>`;
+}
+function publicText(s) { return { PUBLIC: '公开', PRIVATE: '不公开' }[s] || s; }
+function publicTag(s) {
+  const cls = { PUBLIC: 'tag-green', PRIVATE: 'tag-gray' }[s] || 'tag-gray';
+  return `<span class="tag ${cls}">${publicText(s)}</span>`;
+}
+function acceptText(s) { return { UNACCEPTED: '未采纳', ACCEPTED: '已采纳' }[s] || s; }
+function acceptTag(s) {
+  const cls = { UNACCEPTED: 'tag-gray', ACCEPTED: 'tag-green' }[s] || 'tag-gray';
+  return `<span class="tag ${cls}">${acceptText(s)}</span>`;
+}
+function userTypeText(s) { return { REGULAR: '普通用户', OFFICIAL: '官方号' }[s] || s; }
+function userTypeTag(s) {
+  const cls = { REGULAR: 'tag-gray', OFFICIAL: 'tag-green' }[s] || 'tag-gray';
+  return `<span class="tag ${cls}">${userTypeText(s)}</span>`;
+}
+
+/* ===== Navigation ===== */
+document.querySelectorAll('.menu-item[data-page]').forEach(item => {
+  item.addEventListener('click', () => switchPage(item.dataset.page));
+});
+
+function switchPage(page) {
+  document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+  document.querySelector(`.menu-item[data-page="${page}"]`)?.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page)?.classList.add('active');
+}
+
+/* ===== Question Table ===== */
+function renderQuestions() {
+  const tbody = document.getElementById('q-table-body');
+  tbody.innerHTML = questions.map(q => `
+    <tr>
+      <td><input type="checkbox" class="checkbox" value="${q.id}" ${qSelected.has(q.id) ? 'checked' : ''} onchange="toggleQuestionSelect(${q.id})"></td>
+      <td class="center">${q.sortOrder}</td>
+      <td>${q.id}</td>
+      <td><div class="text-ellipsis" title="${q.title}">${q.title}</div></td>
+      <td>${q.groupName}</td>
+      <td>${q.posterNickname}</td>
+      <td>${q.createdAt}</td>
+      <td>${statusTag(q.reviewStatus)}</td>
+      <td>${publicTag(q.publicStatus)}</td>
+      <td>${acceptTag(q.acceptStatus)}</td>
+      <td>${pushTag(q.pushStatus)}</td>
+      <td class="center"><div class="switch ${q.isHot ? 'on' : ''}" onclick="toggleHot(${q.id})"></div></td>
+      <td class="center"><a onclick="openReplyDrawer(${q.id})">${q.answerCount}</a></td>
+      <td>
+        <button class="btn btn-primary btn-sm" onclick="openQuestionDrawer('view', ${q.id})">查看</button>
+        <div class="dropdown" id="q-dropdown-${q.id}">
+          <button class="btn btn-default btn-sm" onclick="toggleDropdown('q-dropdown-${q.id}')">更多 ▼</button>
+          <div class="dropdown-menu">
+            ${q.reviewStatus === 'PENDING' ? `<div class="dropdown-item" onclick="auditQuestion(${q.id},'APPROVE')">审核通过</div>` : ''}
+            ${q.reviewStatus === 'PENDING' ? `<div class="dropdown-item" onclick="auditQuestion(${q.id},'REJECT')">审核驳回</div>` : ''}
+            <div class="dropdown-item" onclick="togglePublic(${q.id})">${q.publicStatus === 'PUBLIC' ? '取消公开' : '设为公开'}</div>
+            ${q.isHot ? `<div class="dropdown-item" onclick="toggleHot(${q.id})">取消热门</div>` : ''}
+            <div class="dropdown-item" onclick="pushUopQuestion(${q.id})">推送到UOP</div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item danger" onclick="deleteQuestion(${q.id})">删除</div>
+          </div>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  updateQuestionBatchBtns();
+  renderPagination('q-pagination', questions.length, 10, 1);
+}
+
+function renderPagination(id, total, pageSize, current) {
+  const pages = Math.ceil(total / pageSize) || 1;
+  let html = '<span class="pagination-info">共 ' + total + ' 条</span>';
+  html += '<button class="pagination-btn" disabled>上一页</button>';
+  for (let i = 1; i <= pages; i++) {
+    html += `<button class="pagination-btn ${i === current ? 'active' : ''}">${i}</button>`;
+  }
+  html += '<button class="pagination-btn" disabled>下一页</button>';
+  document.getElementById(id).innerHTML = html;
+}
+
+function toggleQuestionSelect(id) {
+  qSelected.has(id) ? qSelected.delete(id) : qSelected.add(id);
+  updateQuestionBatchBtns();
+  const all = questions.length && questions.every(q => qSelected.has(q.id));
+  document.getElementById('q-check-all').checked = all;
+}
+
+function toggleQuestionSelectAll() {
+  const checked = document.getElementById('q-check-all').checked;
+  questions.forEach(q => checked ? qSelected.add(q.id) : qSelected.delete(q.id));
+  renderQuestions();
+}
+
+function updateQuestionBatchBtns() {
+  const disabled = qSelected.size === 0;
+  ['q-batch-approve', 'q-batch-reject', 'q-batch-delete', 'q-batch-push-uop'].forEach(id => {
+    document.getElementById(id).disabled = disabled;
+  });
+}
+
+function toggleHot(id) {
+  const q = questions.find(x => x.id === id);
+  if (q) { q.isHot = !q.isHot; renderQuestions(); toast(q.isHot ? '已设为热门' : '已取消热门', 'success'); }
+}
+function togglePublic(id) {
+  const q = questions.find(x => x.id === id);
+  if (q) { q.publicStatus = q.publicStatus === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC'; renderQuestions(); toast(q.publicStatus === 'PUBLIC' ? '已设为公开' : '已取消公开', 'success'); }
+}
+function pushUopQuestion(id) {
+  const q = questions.find(x => x.id === id);
+  if (q) { q.pushStatus = 'PUSHED'; renderQuestions(); toast('已推送到UOP', 'success'); }
+}
+
+function auditQuestion(id, action) {
+  const q = questions.find(x => x.id === id);
+  if (!q) return;
+  if (action === 'REJECT') {
+    rejectTarget = q; rejectType = 'question';
+    document.getElementById('reject-reason').value = '';
+    document.getElementById('reject-modal').classList.add('open');
+  } else {
+    q.reviewStatus = 'APPROVED'; renderQuestions(); toast('审核通过', 'success');
+  }
+}
+
+function deleteQuestion(id) {
+  if (!confirm('确定要删除这条问题吗？此操作不可撤销。')) return;
+  const idx = questions.findIndex(x => x.id === id);
+  if (idx > -1) { questions.splice(idx, 1); renderQuestions(); toast('删除成功', 'success'); }
+}
+
+function batchQuestionAction(action) {
+  const ids = Array.from(qSelected);
+  if (!ids.length) return;
+  if (action === 'delete') {
+    if (!confirm('确定要删除选中的 ' + ids.length + ' 条问题吗？')) return;
+    for (let i = questions.length - 1; i >= 0; i--) {
+      if (ids.includes(questions[i].id)) questions.splice(i, 1);
+    }
+    qSelected.clear(); renderQuestions(); toast('批量删除成功', 'success');
+  } else if (action === 'reject') {
+    rejectTarget = null; rejectType = 'question-batch';
+    document.getElementById('reject-reason').value = '';
+    document.getElementById('reject-modal').classList.add('open');
+  } else if (action === 'push-uop') {
+    ids.forEach(id => { const q = questions.find(x => x.id === id); if (q) q.pushStatus = 'PUSHED'; });
+    qSelected.clear(); renderQuestions(); toast('批量推送到UOP成功', 'success');
+  } else {
+    ids.forEach(id => { const q = questions.find(x => x.id === id); if (q) q.reviewStatus = 'APPROVED'; });
+    qSelected.clear(); renderQuestions(); toast('批量审核通过', 'success');
+  }
+}
+
+function resetQuestionFilter() {
+  ['q-filter-keyword', 'q-filter-id', 'q-filter-group', 'q-filter-status', 'q-filter-public', 'q-filter-poster', 'q-filter-series', 'q-filter-date'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  toast('已重置筛选条件');
+}
+function searchQuestions() { toast('查询条件已应用', 'success'); }
+
+/* ===== Question Drawer ===== */
+function openQuestionDrawer(mode, id) {
+  const q = id ? questions.find(x => x.id === id) : null;
+  currentDrawerQuestion = q;
+  document.getElementById('q-drawer-title').textContent = '查看问题';
+  document.getElementById('q-drawer-title-input').value = q?.title || '';
+  document.getElementById('q-drawer-content').value = q?.content || '';
+  document.getElementById('q-drawer-group').value = q?.groupName || 'Engineer Online';
+  document.getElementById('q-drawer-poster').value = q?.posterNickname || '';
+  document.getElementById('q-drawer-status').value = q?.reviewStatus || 'PENDING';
+  document.getElementById('q-drawer-hot').checked = q?.isHot || false;
+  document.getElementById('q-drawer-public').checked = q?.publicStatus === 'PUBLIC' || false;
+  const editable = false;
+  ['q-drawer-title-input', 'q-drawer-content', 'q-drawer-group', 'q-drawer-poster', 'q-drawer-status'].forEach(id => {
+    document.getElementById(id).disabled = !editable;
+  });
+  document.getElementById('q-drawer-footer').style.display = editable ? 'flex' : 'none';
+  document.getElementById('q-drawer-overlay').classList.add('open');
+  document.getElementById('q-drawer').classList.add('open');
+}
+function closeQuestionDrawer() {
+  document.getElementById('q-drawer-overlay').classList.remove('open');
+  document.getElementById('q-drawer').classList.remove('open');
+}
+function saveQuestion() {
+  toast('保存成功', 'success'); closeQuestionDrawer(); renderQuestions();
+}
+
+/* ===== Reply Drawer ===== */
+function openReplyDrawer(questionId) {
+  const q = questions.find(x => x.id === questionId);
+  document.getElementById('r-drawer-title').textContent = '查看回复 (' + (q?.answerCount || 0) + ')';
+  document.getElementById('r-drawer-body').innerHTML = replyData.map(r => `
+    <div class="reply-item">
+      <div class="reply-header">
+        <div class="reply-avatar">${r.replierNickname.charAt(0)}</div>
+        <span class="reply-author">${r.replierNickname}</span>
+        ${r.replierType === 'OFFICIAL_ENGINEER' ? '<span class="reply-badge">Engineer</span>' : r.replierType === 'OFFICIAL_PM' ? '<span class="reply-badge">Product Manager</span>' : ''}
+      </div>
+      <div class="reply-content">${r.content}</div>
+      <div class="reply-meta">
+        <span>${r.createdAt}</span>
+        ${r.isAccepted ? '<span style="color:#52C41A">已采纳</span>' : ''}
+        <span>👍 ${r.upvoteCount}</span>
+        <span>👎 ${r.downvoteCount}</span>
+      </div>
+    </div>
+  `).join('') || '<div class="empty"><div class="empty-icon">💬</div><div>暂无回复</div></div>';
+  document.getElementById('r-drawer-overlay').classList.add('open');
+  document.getElementById('r-drawer').classList.add('open');
+}
+function closeReplyDrawer() {
+  document.getElementById('r-drawer-overlay').classList.remove('open');
+  document.getElementById('r-drawer').classList.remove('open');
+}
+
+/* ===== Answer Table ===== */
+function renderAnswers() {
+  const tbody = document.getElementById('a-table-body');
+  tbody.innerHTML = answers.map(a => `
+    <tr>
+      <td><input type="checkbox" class="checkbox" value="${a.id}" ${aSelected.has(a.id) ? 'checked' : ''} onchange="toggleAnswerSelect(${a.id})"></td>
+      <td>${a.id}</td>
+      <td><div class="text-ellipsis" title="${a.content}">${a.content}</div></td>
+      <td>${a.replierNickname}</td>
+      <td>${a.groupName}</td>
+      <td>${a.createdAt}</td>
+      <td>${statusTag(a.reviewStatus)}</td>
+      <td><span style="color:${a.isAccepted ? '#52C41A' : '#999'}">${a.isAccepted ? '已采纳' : '未采纳'}</span></td>
+      <td>${syncTag(a.syncStatus)}</td>
+      <td>
+        ${a.reviewStatus === 'PENDING' ? `<button class="btn btn-primary btn-sm" onclick="auditAnswer(${a.id},'APPROVE')">审核</button>` : ''}
+        <div class="dropdown" id="a-dropdown-${a.id}">
+          <button class="btn btn-default btn-sm" onclick="toggleDropdown('a-dropdown-${a.id}')">更多 ▼</button>
+          <div class="dropdown-menu">
+            ${a.reviewStatus === 'PENDING' ? `<div class="dropdown-item" onclick="auditAnswer(${a.id},'APPROVE')">审核通过</div>` : ''}
+            ${a.reviewStatus === 'PENDING' ? `<div class="dropdown-item" onclick="auditAnswer(${a.id},'REJECT')">审核驳回</div>` : ''}
+            ${a.syncStatus === 'SYNC_FAILED' ? `<div class="dropdown-item" onclick="resyncAnswer(${a.id})">重新同步</div>` : ''}
+            <div class="dropdown-item" onclick="pushUopAnswer(${a.id})">推送UOP</div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item danger" onclick="deleteAnswer(${a.id})">删除</div>
+          </div>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  updateAnswerBatchBtns();
+  renderPagination('a-pagination', answers.length, 10, 1);
+}
+
+function toggleAnswerSelect(id) {
+  aSelected.has(id) ? aSelected.delete(id) : aSelected.add(id);
+  updateAnswerBatchBtns();
+  const all = answers.length && answers.every(a => aSelected.has(a.id));
+  document.getElementById('a-check-all').checked = all;
+}
+function toggleAnswerSelectAll() {
+  const checked = document.getElementById('a-check-all').checked;
+  answers.forEach(a => checked ? aSelected.add(a.id) : aSelected.delete(a.id));
+  renderAnswers();
+}
+function updateAnswerBatchBtns() {
+  const disabled = aSelected.size === 0;
+  ['a-batch-approve', 'a-batch-reject', 'a-batch-delete', 'a-batch-push-uop'].forEach(id => {
+    document.getElementById(id).disabled = disabled;
+  });
+}
+
+function pushUopAnswer(id) {
+  const a = answers.find(x => x.id === id);
+  if (a) { a.syncStatus = 'SYNCED'; renderAnswers(); toast('推送UOP成功', 'success'); }
+}
+
+function auditAnswer(id, action) {
+  const a = answers.find(x => x.id === id);
+  if (!a) return;
+  if (action === 'REJECT') {
+    rejectTarget = a; rejectType = 'answer';
+    document.getElementById('reject-reason').value = '';
+    document.getElementById('reject-modal').classList.add('open');
+  } else {
+    a.reviewStatus = 'APPROVED';
+    if (a.replierType !== 'REGULAR') a.syncStatus = 'SYNCED';
+    renderAnswers(); toast('审核通过', 'success');
+  }
+}
+function resyncAnswer(id) {
+  const a = answers.find(x => x.id === id);
+  if (a) { a.syncStatus = 'SYNCED'; renderAnswers(); toast('重新同步成功', 'success'); }
+}
+function deleteAnswer(id) {
+  const a = answers.find(x => x.id === id);
+  if (a?.isAccepted) { toast('已采纳的回答不可删除', 'error'); return; }
+  if (!confirm('确定要删除这条回答吗？')) return;
+  const idx = answers.findIndex(x => x.id === id);
+  if (idx > -1) { answers.splice(idx, 1); renderAnswers(); toast('删除成功', 'success'); }
+}
+function batchAnswerAction(action) {
+  const ids = Array.from(aSelected);
+  if (!ids.length) return;
+  if (action === 'delete') {
+    const hasAccepted = answers.some(a => ids.includes(a.id) && a.isAccepted);
+    if (hasAccepted) { toast('选中的回答中包含已采纳的回答，不可删除', 'error'); return; }
+    if (!confirm('确定要删除选中的 ' + ids.length + ' 条回答吗？')) return;
+    for (let i = answers.length - 1; i >= 0; i--) {
+      if (ids.includes(answers[i].id)) answers.splice(i, 1);
+    }
+    aSelected.clear(); renderAnswers(); toast('批量删除成功', 'success');
+  } else if (action === 'reject') {
+    rejectTarget = null; rejectType = 'answer-batch';
+    document.getElementById('reject-reason').value = '';
+    document.getElementById('reject-modal').classList.add('open');
+  } else if (action === 'push-uop') {
+    ids.forEach(id => {
+      const a = answers.find(x => x.id === id);
+      if (a && a.replierType !== 'REGULAR') a.syncStatus = 'SYNCED';
+    });
+    aSelected.clear(); renderAnswers(); toast('批量推送UOP成功', 'success');
+  } else {
+    ids.forEach(id => {
+      const a = answers.find(x => x.id === id);
+      if (a) { a.reviewStatus = 'APPROVED'; if (a.replierType !== 'REGULAR') a.syncStatus = 'SYNCED'; }
+    });
+    aSelected.clear(); renderAnswers(); toast('批量审核通过', 'success');
+  }
+}
+function resetAnswerFilter() {
+  ['a-filter-keyword', 'a-filter-id', 'a-filter-status', 'a-filter-sync', 'a-filter-replier', 'a-filter-type'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  toast('已重置筛选条件');
+}
+function searchAnswers() { toast('查询条件已应用', 'success'); }
+
+/* ===== Reject Modal ===== */
+function closeRejectModal() {
+  document.getElementById('reject-modal').classList.remove('open');
+  rejectTarget = null; rejectType = null;
+}
+function confirmReject() {
+  const reason = document.getElementById('reject-reason').value.trim();
+  if (!reason) { toast('请填写驳回原因', 'error'); return; }
+  if (rejectType === 'question' && rejectTarget) {
+    rejectTarget.reviewStatus = 'REJECTED'; renderQuestions();
+  } else if (rejectType === 'question-batch') {
+    qSelected.forEach(id => { const q = questions.find(x => x.id === id); if (q) q.reviewStatus = 'REJECTED'; });
+    qSelected.clear(); renderQuestions();
+  } else if (rejectType === 'answer' && rejectTarget) {
+    rejectTarget.reviewStatus = 'REJECTED'; renderAnswers();
+  } else if (rejectType === 'answer-batch') {
+    aSelected.forEach(id => { const a = answers.find(x => x.id === id); if (a) a.reviewStatus = 'REJECTED'; });
+    aSelected.clear(); renderAnswers();
+  }
+  closeRejectModal(); toast('已驳回', 'success');
+}
+
+/* ===== Dropdown ===== */
+function toggleDropdown(id) {
+  document.querySelectorAll('.dropdown-menu.open').forEach(m => {
+    if (!m.parentElement.id === id) m.classList.remove('open');
+  });
+  const menu = document.querySelector('#' + id + ' .dropdown-menu');
+  menu.classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown')) {
+    document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
+  }
+});
+
+/* ===== User Table ===== */
+function renderUsers() {
+  const tbody = document.getElementById('u-table-body');
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>${u.id}</td>
+      <td><div class="reply-avatar" style="background:#009EFF;">${u.nickname.charAt(0)}</div></td>
+      <td>${u.nickname}</td>
+      <td>${u.phone}</td>
+      <td>${u.email}</td>
+      <td>${userTypeTag(u.userType)}</td>
+      <td>${u.officialName || '-'}</td>
+      <td>${u.createdAt}</td>
+      <td>
+        <button class="btn btn-primary btn-sm" onclick="viewUserDetail(${u.id})">查看详情</button>
+        ${u.userType === 'REGULAR' ? `<button class="btn btn-primary btn-sm" onclick="openSetOfficialModal(${u.id})">设为官方号</button>` : `<button class="btn btn-danger btn-sm" onclick="cancelOfficial(${u.id})">取消官方号</button>`}
+      </td>
+    </tr>
+  `).join('');
+  renderPagination('u-pagination', users.length, 10, 1);
+}
+
+function viewUserDetail(id) {
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  currentUserDetail = u;
+  document.getElementById('user-detail-id').textContent = u.id;
+  document.getElementById('user-detail-nickname').textContent = u.nickname;
+  document.getElementById('user-detail-phone').textContent = u.phone;
+  document.getElementById('user-detail-email').textContent = u.email;
+  document.getElementById('user-detail-type').textContent = userTypeText(u.userType);
+  document.getElementById('user-detail-official').textContent = u.officialName || '-';
+  document.getElementById('user-detail-created').textContent = u.createdAt;
+  document.getElementById('user-detail-modal').classList.add('open');
+}
+function closeUserDetailModal() {
+  document.getElementById('user-detail-modal').classList.remove('open');
+  currentUserDetail = null;
+}
+
+function openSetOfficialModal(id) {
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  currentUserDetail = u;
+  document.getElementById('set-official-nickname').textContent = u.nickname;
+  document.getElementById('set-official-select').value = '';
+  document.getElementById('set-official-modal').classList.add('open');
+}
+function closeSetOfficialModal() {
+  document.getElementById('set-official-modal').classList.remove('open');
+  currentUserDetail = null;
+}
+function confirmSetOfficial() {
+  const code = document.getElementById('set-official-select').value;
+  if (!code) { toast('请选择官方号名称', 'error'); return; }
+  if (!currentUserDetail) return;
+  const nameMap = { ENGINEER_GAC: 'GAC Engineer', PM_GAC: 'GAC Product Manager' };
+  currentUserDetail.userType = 'OFFICIAL';
+  currentUserDetail.officialNameCode = code;
+  currentUserDetail.officialName = nameMap[code];
+  renderUsers();
+  closeSetOfficialModal();
+  toast('已设为官方号', 'success');
+}
+function cancelOfficial(id) {
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  if (!confirm('取消官方号将移除该用户所有官方号标识，是否确认？')) return;
+  u.userType = 'REGULAR';
+  u.officialNameCode = null;
+  u.officialName = null;
+  renderUsers();
+  toast('已取消官方号', 'success');
+}
+function resetUserFilter() {
+  ['u-filter-id', 'u-filter-nickname', 'u-filter-phone', 'u-filter-email', 'u-filter-official', 'u-filter-type', 'u-filter-date'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  toast('已重置筛选条件');
+}
+function searchUsers() { toast('查询条件已应用', 'success'); }
+
+/* ===== Group Data ===== */
+let groups = [
+  { id: 1, sortOrder: 1, name: 'Engineer Online', type: 'ENGINEER_ONLINE', description: 'GAC Official Engineer Q&A community, Description Description Description Descrip...', coverImage: '', contentCount: 120, replyCount: 1002, isEnabled: true, createdAt: '2023-08-28 21:44:30', enabledFeatures: ['reply', 'image', 'video', 'vehicle', 'mileage'], accessRoles: ['all'], postRoles: ['car_owner', 'authorized_owner', 'official'], replyRoles: ['car_owner', 'authorized_owner', 'official', 'author'], followUpRoles: ['car_owner', 'authorized_owner', 'official', 'author'] },
+  { id: 2, sortOrder: 2, name: 'Product Community', type: 'PRODUCT_COMMUNITY', description: 'Description Description Description Descrip...', coverImage: '', contentCount: 120, replyCount: 1002, isEnabled: true, createdAt: '2023-08-28 21:44:30', enabledFeatures: ['reply', 'image', 'video'], accessRoles: ['all'], postRoles: ['all'], replyRoles: ['all', 'author'], followUpRoles: ['all', 'author'] },
+  { id: 3, sortOrder: 3, name: 'AION V', type: 'MODEL', description: 'Description Description Description Descrip...', coverImage: '', contentCount: 120, replyCount: 1002, isEnabled: true, createdAt: '2023-08-28 21:44:30', enabledFeatures: ['reply', 'image', 'video', 'vehicle', 'mileage'], accessRoles: ['car_owner', 'authorized_owner'], postRoles: ['car_owner', 'authorized_owner'], replyRoles: ['car_owner', 'authorized_owner', 'author'], followUpRoles: ['car_owner', 'authorized_owner', 'author'] },
+  { id: 4, sortOrder: 4, name: 'HYPTEC HT', type: 'MODEL', description: 'Description Description Description Descrip...', coverImage: '', contentCount: 120, replyCount: 1002, isEnabled: true, createdAt: '2023-08-28 21:44:30', enabledFeatures: ['reply', 'image', 'video', 'vehicle', 'mileage'], accessRoles: ['car_owner', 'authorized_owner'], postRoles: ['car_owner', 'authorized_owner'], replyRoles: ['car_owner', 'authorized_owner', 'author'], followUpRoles: ['car_owner', 'authorized_owner', 'author'] },
+  { id: 5, sortOrder: 5, name: 'Travel', type: 'OTHER', description: 'Description Description Description Descrip...', coverImage: '', contentCount: 120, replyCount: 1002, isEnabled: false, createdAt: '2023-08-28 21:44:30', enabledFeatures: ['reply', 'image'], accessRoles: ['all'], postRoles: ['all'], replyRoles: ['all', 'author'], followUpRoles: ['all', 'author'] },
+];
+let currentDrawerGroup = null;
+let groupViewMode = false;
+
+function groupTypeText(t) {
+  return { ENGINEER_ONLINE: 'Engineer Online', PRODUCT_COMMUNITY: 'Product Community', MODEL: 'Model', OTHER: 'Other' }[t] || t;
+}
+
+/* ===== Group Table ===== */
+function renderGroups() {
+  const tbody = document.getElementById('g-table-body');
+  tbody.innerHTML = groups.map(g => `
+    <tr>
+      <td class="center">${g.sortOrder}</td>
+      <td>${g.id}</td>
+      <td><div class="text-ellipsis" title="${g.name}">${g.name}</div></td>
+      <td>${groupTypeText(g.type)}</td>
+      <td><div class="cover-thumb" style="background:#e8e8e8;"></div></td>
+      <td><div class="text-ellipsis" title="${g.description}" style="max-width:180px;">${g.description}</div></td>
+      <td class="center">${g.contentCount}</td>
+      <td class="center">${g.replyCount}</td>
+      <td class="center"><div class="switch ${g.isEnabled ? 'on' : ''}" onclick="toggleGroupEnable(${g.id})"></div></td>
+      <td>${g.createdAt}</td>
+      <td>
+        <button class="btn btn-primary btn-sm" onclick="openGroupDrawer('view', ${g.id})">查看</button>
+        <button class="btn btn-primary btn-sm" onclick="openGroupDrawer('edit', ${g.id})">编辑</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteGroup(${g.id})">删除</button>
+      </td>
+    </tr>
+  `).join('');
+  renderPagination('g-pagination', groups.length, 10, 1);
+}
+
+function toggleGroupEnable(id) {
+  const g = groups.find(x => x.id === id);
+  if (g) { g.isEnabled = !g.isEnabled; renderGroups(); toast(g.isEnabled ? '已启用' : '已停用', 'success'); }
+}
+
+function deleteGroup(id) {
+  const g = groups.find(x => x.id === id);
+  if (!g) return;
+  const msg = g.contentCount > 0
+    ? `该圈子包含 ${g.contentCount} 条内容，删除后不可恢复。确定要删除吗？`
+    : '确定要删除这个圈子吗？此操作不可撤销。';
+  if (!confirm(msg)) return;
+  const idx = groups.findIndex(x => x.id === id);
+  if (idx > -1) { groups.splice(idx, 1); renderGroups(); toast('删除成功', 'success'); }
+}
+
+function resetGroupFilter() {
+  ['g-filter-name', 'g-filter-type', 'g-filter-status', 'g-filter-date'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  toast('已重置筛选条件');
+}
+function searchGroups() { toast('查询条件已应用', 'success'); }
+
+/* ===== Group Drawer ===== */
+function openGroupDrawer(mode, id) {
+  const g = id ? groups.find(x => x.id === id) : null;
+  currentDrawerGroup = g;
+  groupViewMode = mode === 'view';
+  document.getElementById('g-drawer-title').textContent = mode === 'create' ? '新建圈子' : mode === 'edit' ? '编辑圈子' : '查看圈子';
+
+  // Reset fields
+  document.getElementById('g-drawer-type').value = g?.type || '';
+  document.getElementById('g-drawer-name').value = g?.name || '';
+  document.getElementById('g-drawer-desc').value = g?.description || '';
+
+  // Checkboxes
+  document.querySelectorAll('.g-drawer-feature').forEach(cb => cb.checked = g?.enabledFeatures?.includes(cb.value) || false);
+  document.querySelectorAll('.g-drawer-access').forEach(cb => cb.checked = g?.accessRoles?.includes(cb.value) || false);
+  document.querySelectorAll('.g-drawer-post').forEach(cb => cb.checked = g?.postRoles?.includes(cb.value) || false);
+  document.querySelectorAll('.g-drawer-reply').forEach(cb => cb.checked = g?.replyRoles?.includes(cb.value) || false);
+  document.querySelectorAll('.g-drawer-followup').forEach(cb => cb.checked = g?.followUpRoles?.includes(cb.value) || false);
+
+  // Disable fields in view mode
+  const editable = mode !== 'view';
+  document.getElementById('g-drawer-type').disabled = !editable || (g !== null); // type unchangeable after creation
+  document.getElementById('g-drawer-name').disabled = !editable;
+  document.getElementById('g-drawer-desc').disabled = !editable;
+  document.querySelectorAll('.g-drawer-feature, .g-drawer-access, .g-drawer-post, .g-drawer-reply, .g-drawer-followup').forEach(cb => cb.disabled = !editable);
+  document.getElementById('g-drawer-footer').style.display = editable ? 'flex' : 'none';
+
+  document.getElementById('g-drawer-overlay').classList.add('open');
+  document.getElementById('g-drawer').classList.add('open');
+}
+
+function closeGroupDrawer() {
+  document.getElementById('g-drawer-overlay').classList.remove('open');
+  document.getElementById('g-drawer').classList.remove('open');
+  currentDrawerGroup = null;
+}
+
+function saveGroup() {
+  const type = document.getElementById('g-drawer-type').value;
+  const name = document.getElementById('g-drawer-name').value.trim();
+  const desc = document.getElementById('g-drawer-desc').value.trim();
+
+  if (!type) { toast('请选择圈子类型', 'error'); return; }
+  if (!name) { toast('请输入圈子名称', 'error'); return; }
+  if (!desc) { toast('请输入圈子描述', 'error'); return; }
+
+  // Check name duplicate (excluding current editing group)
+  const duplicate = groups.find(g => g.name === name && g.id !== (currentDrawerGroup?.id));
+  if (duplicate) { toast('圈子名称已存在', 'error'); return; }
+
+  const getChecked = (cls) => Array.from(document.querySelectorAll(cls + ':checked')).map(cb => cb.value);
+
+  const accessRoles = getChecked('.g-drawer-access');
+  if (accessRoles.length === 0) { toast('请至少选择一项访问权限', 'error'); return; }
+  const postRoles = getChecked('.g-drawer-post');
+  if (postRoles.length === 0) { toast('请至少选择一项发表权限', 'error'); return; }
+  const replyRoles = getChecked('.g-drawer-reply');
+  if (replyRoles.length === 0) { toast('请至少选择一项回复权限', 'error'); return; }
+  const followUpRoles = getChecked('.g-drawer-followup');
+  if (followUpRoles.length === 0) { toast('请至少选择一项追问权限', 'error'); return; }
+
+  const payload = {
+    type, name, description: desc,
+    enabledFeatures: getChecked('.g-drawer-feature'),
+    accessRoles, postRoles, replyRoles, followUpRoles,
+  };
+
+  if (currentDrawerGroup) {
+    Object.assign(currentDrawerGroup, payload);
+    toast('保存成功', 'success');
+  } else {
+    const newId = Math.max(...groups.map(g => g.id), 0) + 1;
+    const newGroup = {
+      id: newId, sortOrder: newId, ...payload,
+      coverImage: '', contentCount: 0, replyCount: 0, isEnabled: true, createdAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+    };
+    groups.push(newGroup);
+    toast('创建成功', 'success');
+  }
+  closeGroupDrawer();
+  renderGroups();
+}
+
+/* ===== Init ===== */
+renderQuestions();
+renderAnswers();
+renderUsers();
+renderGroups();
+</script>
+</body>
+</html>
