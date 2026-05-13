@@ -12,7 +12,7 @@ inclusion: manual
 
 1. `tasks/任务清单.md` — 找到对应任务行，确认依赖和验收标准
 2. `requirement/00-需求总览.md` §1.4 术语 / §1.5 角色权限 / §6 全局规则
-3. `requirement/modules/<目标模块>.md` — 重点读 ai_focus_sections（见 `index/spec-index.yaml`）
+3. `requirement/modules/<目标模块>.md` — 重点读 ai_focus_sections（见 `spec-index.yaml`）
 4. `design/权限设计.md` — Permission Code 常量
 5. `design/错误码.md` — 错误处理
 6. `standard/技术架构.md` §3.1 Flutter 规范 / §5 接口 / §9 i18n

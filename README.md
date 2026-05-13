@@ -66,8 +66,7 @@ engineer-online/
 │   ├── flowchart/                      业务/页面流程图
 │   └── ui-spec/                        UI 规范图
 │
-├── index/                             ← 机器可读索引（AI 友好）
-│   └── spec-index.yaml                 模块清单、路径、依赖、Prompt 映射
+├── spec-index.yaml                    ← 机器可读索引（AI 友好）
 │
 └── _archive/                          ← 历史会话记录与备份（仅作参考）
 ```
@@ -81,7 +80,7 @@ engineer-online/
 | 接到开发任务的成员 | `tasks/任务清单.md` | 找到任务编号、输入文档、依赖和验收标准 |
 | 产品 / 项目成员 | `requirement/00-需求总览.md` | 先理解产品边界、角色、流程、全局规则 |
 | 具体开发角色 | `prompts/README.md` | 按 Flutter / H5 / 后端 / 测试 / 后台选择对应 Prompt |
-| AI 编码助手 | `index/spec-index.yaml` | 一次读入建立全局模块索引 |
+| AI 编码助手 | `spec-index.yaml` | 一次读入建立全局模块索引 |
 
 ---
 
@@ -197,7 +196,7 @@ layer: "engineer-online"
 
 ### AI 快速入口
 
-读取 `index/spec-index.yaml` 可一次获取所有模块的路径、依赖、对应 Prompt 模板。
+读取 `spec-index.yaml` 可一次获取所有模块的路径、依赖、对应 Prompt 模板。
 
 ### _archive/ 使用说明
 
@@ -287,13 +286,13 @@ layer: "engineer-online"
 | 新增 UI 文本 | `requirement/多语言文本.md`（全部语种） |
 | 新增枚举/字段 | `requirement/00-需求总览.md` 术语表 + ER 图 + 相关 API |
 | 新增/改模块 | `requirement/00-需求总览.md` + `README.md` |
-| 新增/改目录或文件 | `README.md` + `index/spec-index.yaml` |
+| 新增/改目录或文件 | `README.md` + `spec-index.yaml` |
 
 ### 文档变更流程
 
 1. **发起变更**：在 CHANGELOG.md 底部记录你要改什么（草稿状态）
 2. **修改文档**：按上方同步规则修改所有受影响文件
-3. **自检**：运行 `index/` 下的 lint 脚本（如有）
+3. **自检**：运行 `bash scripts/check-all.sh`
 4. **提交 PR**：标题格式 `docs(scope): 简述`，scope 为 requirement/standard/design/tasks/prompts 之一
 5. **Review**：至少 1 人 review 后合并
 

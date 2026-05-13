@@ -60,7 +60,7 @@ inclusion: manual
 │   ├── 任务清单.md                 开发任务分解
 │   └── 追溯矩阵.csv               BR→EX→AC→任务→API 全链路
 ├── prompts/                     ← AI Prompt 模板
-├── index/spec-index.yaml        ← 机器可读索引
+├── spec-index.yaml        ← 机器可读索引
 └── scripts/                     ← Doc Lint 脚本
 ```
 
@@ -118,7 +118,7 @@ PRD 必须包含 10 个标准章节：
 
 ### Phase 4: 索引更新
 
-12. **更新 `index/spec-index.yaml`** — modules 数组追加新模块
+12. **更新 `spec-index.yaml`** — modules 数组追加新模块
 13. **更新 `README.md`** — 目录树 + 项目统计
 
 ## 编号规则

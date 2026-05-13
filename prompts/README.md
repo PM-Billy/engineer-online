@@ -91,7 +91,7 @@
 
 ### 2. AI 关注章节（节省 context）
 
-`index/spec-index.yaml` 为每个模块标注了 `ai_focus_sections`——AI 生成代码时最关键的章节。例如：
+`spec-index.yaml` 为每个模块标注了 `ai_focus_sections`——AI 生成代码时最关键的章节。例如：
 - 模块 5.4 的关键章节：5.4.2（页面元素）/ 5.4.4（BR）/ 5.4.5（EX）/ 5.4.6（数据对象）/ 5.4.7（状态机）/ 5.4.10（API）
 
 如果上下文预算紧张，只读 `ai_focus_sections` 标注的章节即可。
