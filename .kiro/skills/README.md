@@ -1,6 +1,6 @@
 # Kiro Skills — Engineer Online
 
-本项目为 Engineer Online 提供 7 个 Kiro skill，覆盖全部开发角色。开发人员只需一句简单指令即可触发完整的 AI coding 工作流。
+本项目为 Engineer Online 提供 8 个 Kiro skill，覆盖全部开发角色和评审场景。开发人员只需一句简单指令即可触发完整的 AI coding 工作流。
 
 ## Skill 列表
 
@@ -13,6 +13,7 @@
 | `db-design` | 数据库设计 | 全部 | `#db-design 完成任务 GROUP-01` |
 | `test-qa` | 测试 | 全部 | `#test-qa 完成任务 TEST-02` |
 | `spec-writer` | Spec 文档编写 | 新模块/新功能 | `#spec-writer 为圈子管理编写 spec` |
+| `spec-review` | 评审 HTML 生成 | 评审会议 | `#spec-review 生成本次评审 HTML` |
 
 ## 使用方式
 

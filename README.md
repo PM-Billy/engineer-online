@@ -49,8 +49,8 @@ engineer-online/
 │   ├── 任务清单.md                      开发任务清单（含 Spec Coding 分配建议）
 │   └── 追溯矩阵.csv                    BR → EX → AC → 任务 → API 全链路追溯（SSOT）
 │
-├── .kiro/skills/                       ← Kiro Skills（7 个角色模板）
-├── .claude/skills/                     ← Claude Code Skills（7 个角色模板）
+├── .kiro/skills/                       ← Kiro Skills（8 个角色模板）
+├── .claude/skills/                     ← Claude Code Skills（8 个角色模板）
 │
 ├── asset/                             ← 所有图片与资源
 │   ├── architecture/                   架构图
@@ -110,6 +110,10 @@ engineer-online/
 
 ```
 #backend-dev 请完成任务 QPOST-02（问题创建 API）
+```
+
+```
+#spec-review 生成本次评审 HTML
 ```
 
 ### 通用模板（跨工具）
