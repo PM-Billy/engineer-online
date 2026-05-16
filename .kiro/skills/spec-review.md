@@ -153,12 +153,19 @@ mermaid.initialize({ startOnLoad: false, theme: 'base', /* ... */ });
 })();
 ```
 
-### 业务流程胶囊条颜色统一
+### 业务流程胶囊条样式（stepper 风格）
 
-`.process-step` 不要为每一步加 `clr-*` 类（彩色版本太花）。统一用：
-- 背景 `var(--bg-soft)`，1px `var(--border)` 边框
-- 编号圆 `var(--fg)` 深色实底 + 白字
-- 名称 `var(--fg)`，副文 `var(--fg-muted)`
+`.process-strip` 用 stepper 视觉而不是"卡片+箭头"：
+
+- 容器淡渐变背景（白→浅灰）+ 1px 边框
+- 标题左侧带一个小圆点（蓝色）作为标识
+- 步骤排列在一条**水平连接线**上（`.process-step::after` 伪元素绘制）
+- 每步：白底圆形数字徽章（默认浅色边框）+ 名称（粗体）+ 角色·模块号（灰色）
+- hover 数字徽章：填深色 + 轻微放大（`scale(1.08)`）
+
+`.process-step` **不要**为每一步加 `clr-*` 类——保持视觉统一、避免花哨。
+
+不再用 `<span class="process-arrow">→</span>` 文字箭头分隔步骤——连接线由伪元素绘制，更精致也避免文本断行问题。
 
 ### OQ 卡片样式（轻量）
 
@@ -335,7 +342,7 @@ Given/When/Then 用粗体强调。
 | 项目 | 内容 |
 |------|------|
 | 生成范围 | 全量 / 单模块 / 增量 |
-| 输出文件 | requirement/demo/spec-review-{YYYY-MM-DD}.html |
+| 输出文件 | demo/spec-review-{YYYY-MM-DD}.html |
 | 模板版本 | asset/templates/spec-review.html |
 | 章节计划 | 10 章节 |
 
@@ -468,7 +475,19 @@ Given/When/Then 用粗体强调。
 
 **严禁写脚本。** 用 `fs_write` / `fs_append` / `str_replace` 工具直接编辑。
 
-复制模板到 `requirement/demo/spec-review-{date}.html`（或项目约定的输出位置），逐段处理 REPEAT 块和占位符。
+复制模板到 `demo/spec-review-{date}.html`，逐段处理 REPEAT 块和占位符。
+
+#### 4.1 图片资源处理
+
+**不在 demo 下复制图片副本**——直接用 `../asset/...` 引用仓库根的 `asset/` 目录（单一真相源，避免维护两份图片不一致）。
+
+写完 HTML 后检查所有 `<img src>` 和 `data-protoview` 属性：
+- 路径形式必须是 `../asset/...`（**不要**写 `asset/...`、`../../asset/...` 或绝对 URL）
+- 引用的图片在仓库根 `asset/<子目录>/` 下必须真实存在（grep `<img src` 后逐个用 `ls` 验证）
+
+#### 4.2 更新索引页
+
+写完新评审 HTML 后，在 `demo/index.html` 的"需求评审 HTML"卡片列表里追加一个 `<a class="featured ...">` 链接（**相对路径**，如 `spec-review-{date}.html`，因为 `index.html` 与新评审 HTML 同在 `demo/` 目录），并把"最新"徽章移到新版本上、旧版本徽章移除。
 
 注意嵌套块的正确顺序：
 - 先填外层（如 `module_panel`）
@@ -494,7 +513,9 @@ Given/When/Then 用粗体强调。
 - [ ] 模块清单与 spec 索引文件一致
 - [ ] BR/AC/Permission 数字与项目 README 一致
 - [ ] 实体字段与数据模型设计文档一致
-- [ ] 图片路径以 ../../asset/ 开头（或项目约定路径）
+- [ ] 图片路径用 `../asset/...` 开头（指向仓库根的 `asset/`），**不要**用 `asset/...` 或 `../../asset/...`
+- [ ] 引用的图片在仓库根 `asset/<子目录>/` 下都存在（grep `<img src` 后逐个验证）
+- [ ] `demo/index.html` 的卡片列表已追加新评审入口（相对路径）
 
 ### 视觉与交互
 - [ ] 所有左侧 Tab（§4/§6/§7/§8）切换正常
@@ -516,8 +537,8 @@ Given/When/Then 用粗体强调。
 | 模板源 | 不允许就地修改 `asset/templates/spec-review.html`，复制后再填 |
 | CSS/JS | 完全保留模板的 `<style>` 和 `<script>` |
 | 数据来源 | 仅来自 spec 文档，禁止编造 |
-| 图片路径 | HTML 在 `requirement/demo/` 时引用 asset 用 `../../asset/...` |
-| 输出位置 | `requirement/demo/spec-review-{YYYY-MM-DD}.html`（或项目约定） |
+| 图片路径 | HTML 在 `demo/` 中，引用 asset 用 `../asset/...`（指向仓库根的 `asset/`）。**不要**复制图片副本到 demo 目录下 |
+| 输出位置 | `demo/spec-review-{YYYY-MM-DD}.html` |
 | doc lint | 完成后项目 lint 必须通过 |
 
 ## 写作技巧

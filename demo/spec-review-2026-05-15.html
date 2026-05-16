@@ -1,0 +1,2292 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Engineer Online — 需求评审</title>
+  <!--
+    SPEC REVIEW TEMPLATE v4.0
+    章节顺序:
+      1) 产品概述
+      2) 业务流程        含端到端流转胶囊条 + Tab 切换（顶部）
+      3) 功能架构
+      4) 模块详情        左右联动
+      5) 原型预览        筛选 + lightbox
+      6) 角色与权限      左侧 Tab
+      7) 全局规范        左侧 Tab
+      8) 方案设计        左侧 Tab：技术架构/数据模型/部署/决策/错误码
+      9) Spec Coding 指引
+     10) AI 评审摘要
+     11) 开放问题
+  -->
+  <style>
+    :root {
+      --bg:#fff; --bg-soft:#f8fafc; --bg-muted:#f1f5f9;
+      --fg:#0f172a; --fg-muted:#64748b; --fg-soft:#94a3b8;
+      --border:#e2e8f0; --border-soft:#f1f5f9;
+      --primary:#1d4ed8; --primary-soft:#eff6ff;
+      --radius:0.5rem; --radius-lg:0.75rem;
+      --shadow-xs:0 1px 2px 0 rgba(15,23,42,.04);
+      --shadow-sm:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
+      --shadow-md:0 6px 16px rgba(15,23,42,.08),0 2px 4px rgba(15,23,42,.04);
+    }
+    .clr-blue   { --c-bg:#eff6ff; --c-border:#dbeafe; --c-fg:#1e40af; --c-strong:#1d4ed8; }
+    .clr-green  { --c-bg:#ecfdf5; --c-border:#d1fae5; --c-fg:#047857; --c-strong:#059669; }
+    .clr-purple { --c-bg:#faf5ff; --c-border:#f3e8ff; --c-fg:#7e22ce; --c-strong:#9333ea; }
+    .clr-orange { --c-bg:#fff7ed; --c-border:#ffedd5; --c-fg:#c2410c; --c-strong:#ea580c; }
+    .clr-red    { --c-bg:#fef2f2; --c-border:#fee2e2; --c-fg:#b91c1c; --c-strong:#dc2626; }
+    .clr-amber  { --c-bg:#fffbeb; --c-border:#fef3c7; --c-fg:#b45309; --c-strong:#d97706; }
+    .clr-indigo { --c-bg:#eef2ff; --c-border:#e0e7ff; --c-fg:#4338ca; --c-strong:#4f46e5; }
+    .clr-teal   { --c-bg:#f0fdfa; --c-border:#ccfbf1; --c-fg:#0f766e; --c-strong:#0d9488; }
+    .clr-rose   { --c-bg:#fff1f2; --c-border:#ffe4e6; --c-fg:#be123c; --c-strong:#e11d48; }
+    .clr-slate  { --c-bg:#f8fafc; --c-border:#e2e8f0; --c-fg:#475569; --c-strong:#334155; }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 15px; line-height: 1.65;
+      color: var(--fg); background: white;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h1,h2,h3,h4 { margin: 0; line-height: 1.3; letter-spacing: -0.015em; font-weight: 600; }
+    p { margin: 0; }
+    code {
+      padding: 0.125rem 0.4rem; background: var(--bg-muted);
+      border-radius: 0.25rem; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.85em; color: var(--fg);
+    }
+    img { max-width: 100%; display: block; }
+
+    /* ===== Nav ===== */
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(255,255,255,.85);
+      backdrop-filter: saturate(180%) blur(12px);
+      -webkit-backdrop-filter: saturate(180%) blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner { max-width: 1280px; margin: 0 auto; padding: 0.875rem 1.5rem; display: flex; align-items: center; gap: 1.5rem; }
+    .nav-brand { display: flex; align-items: center; gap: 0.625rem; font-weight: 600; font-size: 0.95rem; }
+    .nav-brand-icon { width: 1.75rem; height: 1.75rem; border-radius: 0.5rem; background: linear-gradient(135deg,#1d4ed8 0%,#4f46e5 100%); color: white; display: grid; place-items: center; font-size: 0.85rem; font-weight: 700; }
+    .nav-links { display: flex; gap: 0.125rem; flex-wrap: wrap; margin-left: auto; }
+    .nav-links a { padding: 0.4rem 0.625rem; border-radius: 0.375rem; color: var(--fg-muted); font-size: 0.825rem; font-weight: 500; transition: all 0.12s; }
+    .nav-links a:hover { background: var(--bg-muted); color: var(--fg); text-decoration: none; }
+    .nav-links a.active { background: var(--fg); color: white; }
+
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; }
+    section { padding: 4rem 0 1rem; scroll-margin-top: 4.5rem; position: relative; }
+    /* Alternating section background — odd: white, even: soft */
+    section.section-alt { background: var(--bg-soft); }
+    section.section-alt::before, section.section-alt::after {
+      content: ''; position: absolute; left: calc(50% - 50vw); right: calc(50% - 50vw);
+      width: 100vw; background: var(--bg-soft); top: 0; bottom: 0; z-index: -1;
+    }
+
+    /* ===== Hero ===== */
+    .hero { position: relative; padding: 4.5rem 0 3.5rem; background: linear-gradient(180deg,#fff 0%,var(--bg-soft) 100%); border-bottom: 1px solid var(--border); overflow: hidden; }
+    .hero::before { content:''; position: absolute; inset: 0; pointer-events: none; background-image: radial-gradient(circle at 15% 20%, rgba(59,130,246,.08), transparent 40%), radial-gradient(circle at 85% 80%, rgba(168,85,247,.08), transparent 40%); }
+    .hero .container { position: relative; }
+    .hero-meta { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.75rem; border-radius: 9999px; background: white; border: 1px solid var(--border); font-size: 0.8rem; color: var(--fg-muted); margin-bottom: 1.25rem; box-shadow: var(--shadow-xs); }
+    .pulse { width: 0.5rem; height: 0.5rem; border-radius: 9999px; background: #10b981; box-shadow: 0 0 0 4px rgba(16,185,129,.18); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 4px rgba(16,185,129,.18);} 50%{box-shadow:0 0 0 6px rgba(16,185,129,.25);} }
+    .hero h1 { font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1rem; }
+    .hero h1 .accent { background: linear-gradient(135deg,#1d4ed8 0%,#7e22ce 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p.lead { font-size: 1.075rem; color: var(--fg-muted); max-width: 44rem; margin-bottom: 1.75rem; }
+    .hero-cta { display: flex; gap: 0.625rem; flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.125rem; background: var(--fg); color: white; border-radius: var(--radius); font-weight: 500; font-size: 0.875rem; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.05s; box-shadow: var(--shadow-sm); }
+    .btn:hover { opacity: 0.92; text-decoration: none; }
+    .btn:active { transform: translateY(1px); }
+    .btn-ghost { background: white; color: var(--fg); border: 1px solid var(--border); }
+
+    .hero-stats { margin-top: 2.5rem; display: grid; grid-template-columns: repeat(4,1fr); gap: 0.875rem; }
+    .hero-stat { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.125rem 1.25rem; box-shadow: var(--shadow-xs); position: relative; overflow: hidden; }
+    .hero-stat::after { content:''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--c-strong, var(--primary)); }
+    .hero-stat-value { font-size: 1.75rem; font-weight: 700; line-height: 1; color: var(--fg); letter-spacing: -0.02em; }
+    .hero-stat-label { font-size: 0.78rem; color: var(--fg-muted); margin-top: 0.5rem; font-weight: 500; }
+    .hero-stat-sub { font-size: 0.7rem; color: var(--fg-soft); margin-top: 0.25rem; }
+    @media (max-width: 768px) { .hero-stats { grid-template-columns: repeat(2,1fr); } .nav-links { display: none; } }
+
+    /* ===== Section ===== */
+    .section-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .section-eyebrow { display: inline-flex; align-items: center; gap: 0.375rem; font-size: 0.74rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .section-eyebrow-dot { width: 0.375rem; height: 0.375rem; border-radius: 9999px; }
+    .section-title { font-size: 1.625rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+    .section-subtitle { color: var(--fg-muted); font-size: 0.95rem; max-width: 56rem; }
+    .section-side-meta { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.75rem; border-radius: 9999px; background: white; border: 1px solid var(--border); font-size: 0.8rem; color: var(--fg-muted); box-shadow: var(--shadow-xs); }
+
+    /* ===== Cards ===== */
+    .card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-xs); }
+    .card-hover { transition: all 0.18s; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--c-border, var(--border)); }
+    .card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.875rem; }
+    .card-icon { width: 2.25rem; height: 2.25rem; border-radius: var(--radius); display: grid; place-items: center; background: var(--c-bg, var(--primary-soft)); color: var(--c-strong, var(--primary)); flex-shrink: 0; }
+    .card-title { font-size: 1rem; font-weight: 600; }
+    .card-desc { color: var(--fg-muted); font-size: 0.9rem; line-height: 1.6; }
+
+    .grid { display: grid; gap: 1rem; }
+    .grid-2 { grid-template-columns: repeat(2,1fr); }
+    .grid-3 { grid-template-columns: repeat(3,1fr); }
+    .grid-4 { grid-template-columns: repeat(4,1fr); }
+    @media (max-width: 1024px) { .grid-3, .grid-4 { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 640px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } .hero h1 { font-size: 2rem; } }
+
+    .tag { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.125rem 0.5rem; border-radius: 0.375rem; border: 1px solid var(--c-border); background: var(--c-bg); color: var(--c-fg); font-size: 0.72rem; font-weight: 500; }
+    .badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.72rem; font-weight: 500; background: var(--c-bg); color: var(--c-fg); border: 1px solid var(--c-border); }
+    .badge-success { --c-bg:#d1fae5; --c-fg:#065f46; --c-border:#a7f3d0; }
+    .badge-warning { --c-bg:#fef3c7; --c-fg:#92400e; --c-border:#fde68a; }
+    .badge-danger { --c-bg:#fee2e2; --c-fg:#991b1b; --c-border:#fecaca; }
+    .badge-info { --c-bg:#dbeafe; --c-fg:#1e40af; --c-border:#bfdbfe; }
+    .badge-neutral { --c-bg: var(--bg-muted); --c-fg: var(--fg-muted); --c-border: var(--border); }
+
+    .table-wrap { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: white; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead { background: var(--bg-soft); }
+    th { padding: 0.75rem 1rem; text-align: left; font-weight: 600; font-size: 0.74rem; color: var(--fg-muted); letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--bg-soft); }
+
+    .checklist { list-style: none; padding: 0; margin: 0; }
+    .checklist li { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.625rem 0; font-size: 0.9rem; border-bottom: 1px solid var(--border-soft); }
+    .checklist li:last-child { border-bottom: none; }
+    .check-icon { flex-shrink: 0; width: 1.25rem; height: 1.25rem; border-radius: 9999px; display: grid; place-items: center; margin-top: 0.0625rem; font-size: 0.7rem; font-weight: 700; }
+    .check-icon.success { background: #d1fae5; color: #047857; }
+    .check-icon.warning { background: #fef3c7; color: #b45309; }
+    .check-icon.info { background: #dbeafe; color: #1e40af; }
+
+    /* ===== Pill tabs (used for §2 flows top — unified with .arch-sub / .proto-filter) ===== */
+    .tabs-top { display: flex; gap: 0.375rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .tabs-top .tab-btn { padding: 0.5rem 1rem; border-radius: var(--radius); background: white; border: 1px solid var(--border); color: var(--fg-muted); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.12s; display: inline-flex; align-items: center; gap: 0.375rem; }
+    .tabs-top .tab-btn:hover { color: var(--fg); }
+    .tabs-top .tab-btn.active { background: var(--fg); color: white; border-color: var(--fg); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ===== Side-tabs (used for §6/7/8/9) — same DOM as modsplit ===== */
+    .splitview { display: grid; grid-template-columns: 16rem 1fr; gap: 1.25rem; align-items: stretch; }
+    @media (max-width: 880px) { .splitview { grid-template-columns: 1fr; } .splitview-list { max-height: 18rem; overflow-y: auto; position: static !important; } }
+    .splitview-list { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0.5rem; box-shadow: var(--shadow-xs); align-self: start; position: sticky; top: 5rem; }
+    .splitview-item { display: flex; align-items: center; gap: 0.625rem; padding: 0.625rem 0.75rem; border-radius: var(--radius); cursor: pointer; transition: all 0.12s; user-select: none; border: 1px solid transparent; }
+    .splitview-item:hover { background: var(--bg-soft); }
+    .splitview-item.active { background: var(--c-bg, var(--primary-soft)); border-color: var(--c-border, var(--primary-soft)); }
+    .splitview-item .sv-id { width: 2.25rem; padding: 0.125rem 0.375rem; background: var(--bg-muted); color: var(--fg-muted); border-radius: 0.25rem; font-size: 0.72rem; font-weight: 700; text-align: center; flex-shrink: 0; }
+    .splitview-item.active .sv-id { background: var(--c-strong); color: white; }
+    .splitview-item .sv-name { font-size: 0.875rem; font-weight: 500; color: var(--fg); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .splitview-item .sv-icon { font-size: 1rem; line-height: 1; flex-shrink: 0; }
+    .splitview-detail { min-height: 22rem; }
+    .sv-pane { display: none; }
+    .sv-pane.active { display: block; }
+
+    /* ===== Module head + blocks (reused for module + design panes) ===== */
+    .modhead { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow-xs); }
+    .modhead-meta { display: flex; gap: 0.375rem; flex-wrap: wrap; align-items: center; margin-bottom: 0.5rem; }
+    .modhead-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .modhead-desc { color: var(--fg-muted); font-size: 0.925rem; }
+    .modgrid { display: grid; gap: 1rem; }
+    @media (min-width: 720px) { .modgrid.cols-2 { grid-template-columns: 1fr 1fr; } }
+    .modblock { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+    .modblock h4 { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.375rem; }
+    .modblock ul { list-style: none; padding: 0; margin: 0; font-size: 0.875rem; color: var(--fg); }
+    .modblock ul li { padding: 0.3125rem 0; line-height: 1.55; }
+    .modblock ul li::before { content: '·'; color: var(--c-strong, var(--primary)); margin-right: 0.5rem; font-weight: 700; }
+    .modblock .br-list li { display: flex; gap: 0.625rem; align-items: flex-start; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-soft); }
+    .modblock .br-list li:last-child { border-bottom: none; }
+    .modblock .br-list li::before { display: none; }
+    .modblock .br-code { background: var(--bg-muted); color: var(--fg-muted); padding: 0.0625rem 0.4rem; border-radius: 0.25rem; font-family: ui-monospace, monospace; font-size: 0.75rem; font-weight: 600; flex-shrink: 0; margin-top: 0.0625rem; }
+    .modlink { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem; background: var(--c-bg, var(--primary-soft)); border: 1px solid var(--c-border, var(--primary-soft)); color: var(--c-strong, var(--primary)); border-radius: var(--radius); font-size: 0.825rem; font-weight: 500; cursor: pointer; }
+    .modlink:hover { text-decoration: none; opacity: 0.9; }
+
+    /* ===== Function tree (Architecture) ===== */
+    .fntree { background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
+    .fntree-row { display: grid; gap: 1rem; }
+    @media (min-width: 800px) { .fntree-row.cols-2 { grid-template-columns: 1fr 1fr; } }
+    .fntree-layer { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
+    .fntree-layer-head { display: flex; align-items: center; gap: 0.625rem; margin-bottom: 0.75rem; padding-bottom: 0.625rem; border-bottom: 1px dashed var(--border); }
+    .fntree-layer-icon { width: 1.75rem; height: 1.75rem; border-radius: var(--radius); display: grid; place-items: center; background: var(--c-bg); color: var(--c-strong); font-size: 0.875rem; }
+    .fntree-layer-title { font-size: 0.95rem; font-weight: 600; color: var(--fg); }
+    .fntree-layer-sub { font-size: 0.78rem; color: var(--fg-muted); margin-top: 0.0625rem; }
+    .fntree-modules { display: grid; gap: 0.5rem; }
+    .fntree-mod { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-radius: var(--radius); background: var(--c-bg); color: var(--c-fg); border: 1px solid var(--c-border); font-size: 0.85rem; font-weight: 500; }
+    .fntree-mod-id { width: 2.5rem; padding: 0.125rem 0.375rem; background: white; color: var(--c-strong); border-radius: 0.25rem; font-size: 0.7rem; font-weight: 700; text-align: center; flex-shrink: 0; border: 1px solid var(--c-border); }
+
+    /* ===== Mermaid + image cards ===== */
+    .mermaid-wrap { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; overflow-x: auto; box-shadow: var(--shadow-xs); }
+    .mermaid-wrap pre { margin: 0; text-align: center; font-family: ui-monospace, monospace; font-size: 0.85rem; }
+    .flowimg { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-xs); text-align: center; }
+    .flowimg img { max-width: 100%; border-radius: var(--radius); cursor: zoom-in; margin: 0 auto; }
+    .flowimg-caption { color: var(--fg-muted); font-size: 0.85rem; margin-top: 0.75rem; }
+
+    /* ===== Process strip (核心流程胶囊条 — 紧凑版，可滚动) ===== */
+    .process-strip {
+      background: linear-gradient(180deg, white 0%, var(--bg-soft) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-xs);
+      overflow-x: auto;
+    }
+    .process-strip-title {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.74rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--fg-muted); margin-bottom: 1.125rem;
+    }
+    .process-strip-title::before {
+      content: ''; width: 0.375rem; height: 0.375rem; border-radius: 9999px;
+      background: var(--primary);
+    }
+    .process-strip-flow {
+      display: flex; align-items: flex-start; gap: 0;
+      min-width: max-content; padding-top: 0.25rem;
+    }
+    .process-step {
+      flex: 0 0 7.5rem;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      background: transparent; border: none; padding: 0 0.5rem;
+      position: relative;
+    }
+    /* Connecting line between number badges */
+    .process-step::after {
+      content: '';
+      position: absolute;
+      top: 0.875rem;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .process-step:last-child::after { display: none; }
+    .process-step-num {
+      position: relative; z-index: 1;
+      width: 1.75rem; height: 1.75rem;
+      background: white; color: var(--fg);
+      border: 2px solid var(--border);
+      border-radius: 9999px;
+      display: grid; place-items: center;
+      font-size: 0.75rem; font-weight: 700;
+      margin-bottom: 0.625rem;
+      transition: all 0.15s;
+    }
+    .process-step:hover .process-step-num {
+      background: var(--fg); color: white; border-color: var(--fg);
+      transform: scale(1.08);
+    }
+    .process-step-name {
+      font-size: 0.825rem; font-weight: 600; color: var(--fg);
+      line-height: 1.3; margin-bottom: 0.125rem;
+    }
+    .process-step-actor {
+      font-size: 0.7rem; color: var(--fg-muted);
+      line-height: 1.3;
+    }
+    /* Legacy text arrows are hidden — line replaces them */
+    .process-arrow { display: none; }
+
+    /* ===== Decision card ===== */
+    .decision-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.375rem; transition: all 0.18s; }
+    .decision-card:hover { border-color: var(--c-border, var(--primary-soft)); box-shadow: var(--shadow-md); }
+    .decision-head { display: flex; align-items: center; gap: 0.625rem; margin-bottom: 0.625rem; }
+    .decision-num { width: 1.75rem; height: 1.75rem; border-radius: 0.5rem; background: var(--c-bg, var(--primary-soft)); color: var(--c-strong, var(--primary)); display: grid; place-items: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+    .decision-title { font-size: 0.95rem; font-weight: 600; }
+    .decision-choice { display: inline-flex; padding: 0.25rem 0.625rem; background: var(--c-bg, var(--bg-muted)); color: var(--c-strong, var(--fg)); border: 1px solid var(--c-border, var(--border)); border-radius: 0.375rem; font-size: 0.825rem; font-weight: 600; margin: 0.5rem 0; }
+    .decision-reason { font-size: 0.875rem; color: var(--fg-muted); line-height: 1.55; }
+
+    /* ===== OQ ===== */
+    .oq-card { background: white; border: 1px solid var(--border); border-left: 3px solid #f59e0b; border-radius: var(--radius-lg); padding: 1.125rem 1.375rem; margin-bottom: 0.75rem; box-shadow: var(--shadow-xs); }
+    .oq-id { display: inline-block; font-size: 0.7rem; font-weight: 700; color: #b45309; letter-spacing: 0.05em; background: #fef3c7; padding: 0.125rem 0.5rem; border-radius: 0.25rem; margin-bottom: 0.5rem; }
+    .oq-q { font-weight: 600; color: var(--fg); margin-bottom: 0.5rem; }
+    .oq-default { font-size: 0.875rem; color: var(--fg-muted); }
+    .oq-default strong { color: #b45309; }
+
+    /* ===== Prototype ===== */
+    .proto-filter { display: flex; gap: 0.375rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .proto-filter-btn { padding: 0.375rem 0.75rem; border-radius: 9999px; background: white; border: 1px solid var(--border); color: var(--fg-muted); font-size: 0.825rem; font-weight: 500; cursor: pointer; transition: all 0.12s; }
+    .proto-filter-btn:hover { color: var(--fg); }
+    .proto-filter-btn.active { background: var(--fg); color: white; border-color: var(--fg); }
+    .proto-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); }
+    .proto-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; cursor: zoom-in; transition: all 0.18s; }
+    .proto-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .proto-card-img { aspect-ratio: 4/3; background: var(--bg-muted); overflow: hidden; display: grid; place-items: center; }
+    .proto-card-img img { width: 100%; height: 100%; object-fit: contain; }
+    .proto-card-meta { padding: 0.625rem 0.875rem; }
+    .proto-card-name { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.125rem; }
+    .proto-card-mod { font-size: 0.74rem; color: var(--fg-muted); }
+
+    /* ===== Lightbox ===== */
+    .lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(15,23,42,.92); display: none; align-items: center; justify-content: center; padding: 2rem; }
+    .lightbox.active { display: flex; }
+    .lightbox img { max-width: 100%; max-height: 90vh; border-radius: var(--radius); cursor: zoom-out; }
+    .lightbox-close { position: absolute; top: 1rem; right: 1.5rem; width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: rgba(255,255,255,.15); color: white; display: grid; place-items: center; border: none; cursor: pointer; font-size: 1.5rem; font-weight: 300; }
+    .lightbox-cap { position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%); color: white; font-size: 0.9rem; opacity: 0.8; }
+
+    /* ===== Feature tags (key features cloud) ===== */
+    .feature-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+    .feature-tag { padding: 0.375rem 0.75rem; background: var(--c-bg, var(--primary-soft)); color: var(--c-strong, var(--primary)); border: 1px solid var(--c-border, var(--primary-soft)); border-radius: 9999px; font-size: 0.825rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.25rem; }
+
+    /* ===== Journey step cards (业务流程详细 10 步) ===== */
+    .journey { display: grid; gap: 0.75rem; }
+    .journey-step { display: grid; grid-template-columns: 2.5rem 1fr; gap: 1rem; align-items: start; padding: 1rem 1.25rem; background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); transition: all 0.18s; }
+    .journey-step:hover { border-color: var(--c-border, var(--primary-soft)); box-shadow: var(--shadow-md); }
+    .journey-num { width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: var(--c-bg, var(--primary-soft)); color: var(--c-strong, var(--primary)); display: grid; place-items: center; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
+    .journey-content { flex: 1; }
+    .journey-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.375rem; }
+    .journey-title { font-size: 1rem; font-weight: 600; color: var(--fg); }
+    .journey-meta { display: flex; gap: 0.375rem; flex-wrap: wrap; }
+    .journey-actor { padding: 0.125rem 0.5rem; background: var(--bg-muted); color: var(--fg-muted); border-radius: 0.25rem; font-size: 0.72rem; font-weight: 500; }
+    .journey-mod { padding: 0.125rem 0.5rem; background: var(--c-bg); color: var(--c-strong); border: 1px solid var(--c-border); border-radius: 0.25rem; font-size: 0.72rem; font-weight: 600; }
+    .journey-desc { font-size: 0.875rem; color: var(--fg-muted); line-height: 1.55; }
+
+    /* ===== Mini module cards (评审摘要速查) ===== */
+    .mini-mod-grid { display: grid; gap: 0.625rem; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); }
+    .mini-mod { padding: 0.625rem 0.875rem; background: white; border: 1px solid var(--border); border-radius: var(--radius); border-left: 3px solid var(--c-strong, var(--primary)); transition: all 0.15s; }
+    .mini-mod:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+    .mini-mod-id { font-size: 0.7rem; color: var(--c-strong); font-weight: 700; letter-spacing: 0.05em; }
+    .mini-mod-name { font-size: 0.875rem; font-weight: 600; color: var(--fg); margin-top: 0.125rem; }
+    .mini-mod-meta { display: flex; gap: 0.25rem; margin-top: 0.375rem; }
+    .mini-mod-meta .badge { font-size: 0.66rem; padding: 0.0625rem 0.375rem; }
+
+    /* ===== Proto stats (原型分类统计) ===== */
+    .proto-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-top: 1.5rem; }
+    .proto-stat { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 0.875rem 1rem; text-align: center; border-top: 3px solid var(--c-strong); }
+    .proto-stat-value { font-size: 1.5rem; font-weight: 700; color: var(--fg); line-height: 1; }
+    .proto-stat-label { font-size: 0.78rem; color: var(--fg-muted); margin-top: 0.375rem; }
+    @media (max-width: 768px) { .proto-stats { grid-template-columns: repeat(2, 1fr); } }
+
+    .arch-sub { display: flex; gap: 0.375rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .arch-sub-btn { padding: 0.5rem 1rem; border-radius: var(--radius); background: white; border: 1px solid var(--border); color: var(--fg-muted); font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.12s; display: inline-flex; align-items: center; gap: 0.375rem; }
+    .arch-sub-btn:hover { color: var(--fg); }
+    .arch-sub-btn.active { background: var(--fg); color: white; border-color: var(--fg); }
+    .arch-pane { display: none; }
+    .arch-pane.active { display: block; }
+    .arch-layer-card { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1.25rem; background: white; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.5rem; }
+    .arch-layer-tag { width: 7rem; padding: 0.25rem 0.5rem; background: var(--c-bg); color: var(--c-strong); border: 1px solid var(--c-border); border-radius: 0.25rem; font-size: 0.78rem; font-weight: 600; text-align: center; flex-shrink: 0; }
+    .arch-layer-content { flex: 1; font-size: 0.875rem; color: var(--fg); }
+
+    /* ===== Hero TL;DR cards ===== */
+    .hero-tldr { margin-top: 1.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.875rem; }
+    .hero-tldr-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.125rem; box-shadow: var(--shadow-xs); }
+    .hero-tldr-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.625rem; }
+    .hero-tldr-icon { width: 1.5rem; height: 1.5rem; border-radius: 0.375rem; background: var(--c-bg); color: var(--c-strong); display: grid; place-items: center; }
+    .hero-tldr-label { font-size: 0.74rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fg-muted); }
+    .hero-tldr-content { font-size: 0.85rem; color: var(--fg); line-height: 1.55; }
+    .hero-tldr-content strong { color: var(--c-strong); }
+    @media (max-width: 768px) { .hero-tldr { grid-template-columns: repeat(2, 1fr); } }
+
+    /* ===== Entity card (data model — shadcn style) ===== */
+    .entity-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs); transition: all 0.18s; }
+    .entity-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--c-border); }
+    .entity-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+    .entity-name-block { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+    .entity-name { font-size: 1rem; font-weight: 700; color: var(--fg); font-family: ui-monospace, monospace; }
+    .entity-name-cn { font-size: 0.85rem; color: var(--fg-muted); }
+    .entity-rel { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+    .entity-rel-tag { padding: 0.125rem 0.5rem; background: var(--c-bg); color: var(--c-strong); border: 1px solid var(--c-border); border-radius: 0.375rem; font-size: 0.7rem; font-weight: 500; }
+    .entity-card-meta { font-size: 0.78rem; color: var(--fg-muted); margin-bottom: 0.75rem; padding-bottom: 0.625rem; border-bottom: 1px dashed var(--border); }
+    .entity-fields { width: 100%; border-collapse: collapse; font-size: 0.825rem; }
+    .entity-fields td { padding: 0.3rem 0.625rem 0.3rem 0; vertical-align: top; border-bottom: none; }
+    .entity-fields td:first-child { padding-left: 0; }
+    .ef-name { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--fg); font-weight: 500; white-space: nowrap; }
+    .ef-type { font-family: ui-monospace, monospace; color: #1d4ed8; white-space: nowrap; }
+    .ef-desc { color: var(--fg-muted); width: 100%; }
+
+    /* ===== Collapsible BR list ===== */
+    .br-list-wrap .hidden { display: none !important; }
+    .br-expand-btn { display: inline-flex; align-items: center; gap: 0.375rem; margin-top: 0.5rem; padding: 0.375rem 0.75rem; background: var(--bg-muted); border: 1px solid var(--border); color: var(--fg-muted); border-radius: var(--radius); font-size: 0.78rem; font-weight: 500; cursor: pointer; transition: all 0.12s; }
+    .br-expand-btn:hover { background: var(--c-bg, var(--primary-soft)); color: var(--c-strong, var(--primary)); border-color: var(--c-border, var(--primary-soft)); }
+
+    /* ===== AC list ===== */
+    .ac-list { list-style: none; padding: 0; margin: 0; }
+    .ac-list li { display: flex; gap: 0.625rem; align-items: flex-start; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-soft); }
+    .ac-list li:last-child { border-bottom: none; }
+    .ac-list li::before { display: none; }
+    .ac-code { background: #d1fae5; color: #047857; padding: 0.0625rem 0.4rem; border-radius: 0.25rem; font-family: ui-monospace, monospace; font-size: 0.75rem; font-weight: 600; flex-shrink: 0; margin-top: 0.0625rem; }
+    .ac-list strong { color: #047857; font-weight: 600; }
+
+    /* ===== Decision timetable ===== */
+    .timetable { margin-top: 1.25rem; }
+    .timetable-row { display: grid; grid-template-columns: 7rem 1fr 8rem 6rem; gap: 1rem; align-items: center; padding: 0.75rem 1rem; background: white; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.5rem; }
+    .timetable-date { font-family: ui-monospace, monospace; font-size: 0.8rem; font-weight: 600; color: #b45309; }
+    .timetable-task { font-size: 0.875rem; color: var(--fg); }
+    .timetable-owner { font-size: 0.825rem; color: var(--fg-muted); }
+    @media (max-width: 768px) { .timetable-row { grid-template-columns: 1fr; gap: 0.25rem; } }
+
+    .skill-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.125rem; transition: all 0.18s; }
+    .skill-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--c-border, var(--border)); }
+    .skill-card-head { display: flex; align-items: center; gap: 0.625rem; margin-bottom: 0.5rem; }
+    .skill-card-icon { width: 1.75rem; height: 1.75rem; border-radius: 0.375rem; background: var(--c-bg); color: var(--c-strong); display: grid; place-items: center; flex-shrink: 0; font-size: 0.85rem; }
+    .skill-card-name { font-family: ui-monospace, monospace; font-size: 0.875rem; font-weight: 600; }
+    .skill-card-desc { font-size: 0.825rem; color: var(--fg-muted); margin-bottom: 0.625rem; line-height: 1.5; }
+    .skill-card-trigger { padding: 0.375rem 0.625rem; background: var(--bg-muted); border-radius: 0.375rem; font-family: ui-monospace, monospace; font-size: 0.75rem; color: var(--fg); }
+
+    .step-card { display: flex; gap: 1rem; padding: 1rem 1.25rem; background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 0.75rem; }
+    .step-card-num { width: 2rem; height: 2rem; border-radius: 9999px; background: var(--c-bg); color: var(--c-strong); display: grid; place-items: center; font-weight: 700; flex-shrink: 0; }
+    .step-card-content { flex: 1; }
+    .step-card-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .step-card-desc { font-size: 0.85rem; color: var(--fg-muted); line-height: 1.55; }
+
+    footer { margin-top: 5rem; padding: 3rem 0; background: white; border-top: 1px solid var(--border); text-align: center; }
+    footer .footer-brand { font-weight: 600; color: var(--fg); margin-bottom: 0.5rem; }
+    footer .footer-meta { color: var(--fg-soft); font-size: 0.825rem; }
+    footer .footer-meta a { color: var(--fg-muted); }
+
+    /* Section accent colors */
+    #overview     .section-eyebrow { color: #1d4ed8; } #overview     .section-eyebrow-dot { background: #1d4ed8; }
+    #flows        .section-eyebrow { color: #0891b2; } #flows        .section-eyebrow-dot { background: #0891b2; }
+    #architecture .section-eyebrow { color: #7e22ce; } #architecture .section-eyebrow-dot { background: #7e22ce; }
+    #modules      .section-eyebrow { color: #ea580c; } #modules      .section-eyebrow-dot { background: #ea580c; }
+    #prototypes   .section-eyebrow { color: #d97706; } #prototypes   .section-eyebrow-dot { background: #d97706; }
+    #roles        .section-eyebrow { color: #4f46e5; } #roles        .section-eyebrow-dot { background: #4f46e5; }
+    #rules        .section-eyebrow { color: #db2777; } #rules        .section-eyebrow-dot { background: #db2777; }
+    #design       .section-eyebrow { color: #0d9488; } #design       .section-eyebrow-dot { background: #0d9488; }
+    #ai-guide     .section-eyebrow { color: #4338ca; } #ai-guide     .section-eyebrow-dot { background: #4338ca; }
+    #aisummary    .section-eyebrow { color: #16a34a; } #aisummary    .section-eyebrow-dot { background: #16a34a; }
+    #oq           .section-eyebrow { color: #f59e0b; } #oq           .section-eyebrow-dot { background: #f59e0b; }
+
+    svg { display: inline-block; vertical-align: middle; }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <span class="nav-brand">
+      <span class="nav-brand-icon">EO</span>
+      <span>Engineer Online · 评审</span>
+    </span>
+    <div class="nav-links">
+      <a href="#overview">概述</a>
+      <a href="#flows">流程</a>
+      <a href="#architecture">架构</a>
+      <a href="#modules">模块</a>
+      <a href="#prototypes">原型</a>
+      <a href="#roles">权限</a>
+      <a href="#rules">规范</a>
+      <a href="#design">方案</a>
+      <a href="#ai-guide">AI 开发</a>
+      <a href="#aisummary">评审决策</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <span class="hero-meta">
+      <span class="pulse"></span>
+      需求评审中 · 文档版本 2.3.0 · 2026-05-15
+    </span>
+    <h1>Engineer Online<br/><span class="accent">在线工程师 · 需求评审</span></h1>
+    <p class="lead">GAC APP 内的汽车问答社区模块。车主向品牌认证工程师提问、获得专业解答，为品牌沉淀结构化的汽车问题知识库。本期目标：完成 9 个核心功能模块的需求确认与开发动员。</p>
+    <div class="hero-cta">
+      <a class="btn" href="#overview">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        开始评审
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/PM-Billy/engineer-online" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.06c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.27-1.69-1.27-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.76 2.69 1.25 3.35.96.1-.74.4-1.25.72-1.54-2.55-.29-5.23-1.27-5.23-5.66 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.17.91-.25 1.89-.38 2.86-.38.97 0 1.95.13 2.86.38 2.19-1.48 3.15-1.17 3.15-1.17.62 1.58.23 2.75.11 3.04.74.8 1.18 1.82 1.18 3.07 0 4.4-2.68 5.37-5.24 5.65.41.36.77 1.06.77 2.13v3.16c0 .31.21.67.8.56 4.56-1.52 7.85-5.83 7.85-10.91C23.5 5.65 18.35.5 12 .5z"/></svg>
+        查看仓库
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat clr-blue"><div class="hero-stat-value">9</div><div class="hero-stat-label">功能模块</div><div class="hero-stat-sub">P0 × 7 · P1 × 2</div></div>
+      <div class="hero-stat clr-orange"><div class="hero-stat-value">88</div><div class="hero-stat-label">业务规则 BR</div><div class="hero-stat-sub">已 100% 映射追溯</div></div>
+      <div class="hero-stat clr-green"><div class="hero-stat-value">63</div><div class="hero-stat-label">验收标准 AC</div><div class="hero-stat-sub">Given-When-Then</div></div>
+      <div class="hero-stat clr-purple"><div class="hero-stat-value">7</div><div class="hero-stat-label">核心实体</div><div class="hero-stat-sub">含 2 个状态机</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+
+<!-- ============================================================ -->
+<!-- §1 OVERVIEW                                                   -->
+<!-- ============================================================ -->
+<section id="overview">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow"><span class="section-eyebrow-dot"></span> §1 Overview</div>
+      <h2 class="section-title">产品概述</h2>
+      <p class="section-subtitle">产品边界、核心问题、目标用户与项目术语</p>
+    </div>
+    <span class="section-side-meta">9 模块 · 7 角色 · 泰国市场</span>
+  </div>
+  <div class="grid grid-2">
+    <div class="card clr-red">
+      <div class="card-header">
+        <div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div>
+        <h3 class="card-title">核心问题</h3>
+      </div>
+      <div class="card-desc">
+        ① 车主遇到用车问题（故障灯、异响等）时缺乏专业可信的解答渠道<br/>
+        ② 车企缺少直接触达用户、收集产品反馈的社区平台<br/>
+        ③ 工程师的专业知识难以结构化沉淀，形成可搜索的知识库
+      </div>
+    </div>
+    <div class="card clr-green">
+      <div class="card-header">
+        <div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5L20 7"/></svg></div>
+        <h3 class="card-title">核心目标</h3>
+      </div>
+      <div class="card-desc">
+        ① 为车主提供专业、可信的在线问答服务<br/>
+        ② 建立品牌与用户之间的直接沟通渠道<br/>
+        ③ 积累结构化的汽车问题知识库，支持全文检索
+      </div>
+    </div>
+  </div>
+  <h3 style="font-size:1.05rem;font-weight:600;margin:2rem 0 1rem;">关键特性</h3>
+  <div class="card" style="background:var(--bg-soft);">
+    <div class="feature-tags">
+      <span class="feature-tag clr-slate">🛡 品牌认证工程师回答</span>
+      <span class="feature-tag clr-slate">🌐 多语言支持（中/英/泰）</span>
+      <span class="feature-tag clr-slate">🖼 富媒体内容（图片/视频）</span>
+      <span class="feature-tag clr-slate">🚗 车辆信息关联</span>
+      <span class="feature-tag clr-slate">👍 投票与采纳机制</span>
+      <span class="feature-tag clr-slate">🛡️ 内容审核（UOP 对接）</span>
+      <span class="feature-tag clr-slate">🔔 FCM 消息推送</span>
+      <span class="feature-tag clr-slate">🔐 细粒度权限管控</span>
+      <span class="feature-tag clr-slate">🔥 热门排序</span>
+      <span class="feature-tag clr-slate">🔄 翻译功能</span>
+    </div>
+  </div>
+
+  <h3 style="font-size:1.05rem;font-weight:600;margin:2rem 0 1rem;">目标用户</h3>
+  <div class="grid grid-3">
+    <div class="card card-hover clr-blue">
+      <div class="card-header"><div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg></div><h3 class="card-title">车主用户 / 授权车主</h3></div>
+      <div class="card-desc">已绑定车辆的 GAC 车主。可发布问题、追问、投票。授权车主与车主权限等价。</div>
+    </div>
+    <div class="card card-hover clr-indigo">
+      <div class="card-header"><div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><h3 class="card-title">官方号（工程师 / PM）</h3></div>
+      <div class="card-desc">GAC 品牌认证账号，有 V 标识与品牌标签。<strong>顶层回答仅官方号可发</strong>。</div>
+    </div>
+    <div class="card card-hover clr-slate">
+      <div class="card-header"><div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></div><h3 class="card-title">后台管理员</h3></div>
+      <div class="card-desc">运营人员，负责圈子配置、内容审核、官方号设置、UOP 同步状态管理。</div>
+    </div>
+  </div>
+  <h3 style="font-size:1.05rem;font-weight:600;margin:2rem 0 1rem;">术语表</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th style="width:10rem;">术语</th><th style="width:11rem;">英文</th><th>定义</th><th style="width:14rem;">备注</th></tr></thead>
+      <tbody>
+        <tr><td><strong>圈子</strong></td><td><code>Group</code></td><td>社区基本组织单元，每个圈子有独立配置、权限和内容</td><td>"在线工程师"是 Group 实例</td></tr>
+        <tr><td><strong>问题</strong></td><td><code>Question</code></td><td>用户发起的提问帖，可包含标题、描述、图片、车型</td><td>区别于文章和动态</td></tr>
+        <tr><td><strong>回答</strong></td><td><code>Answer</code></td><td>针对问题的回复，支持图片/视频，可被采纳</td><td>同表存储嵌套回复</td></tr>
+        <tr><td><strong>采纳</strong></td><td><code>Accept</code></td><td>提问者将某个回答标记为最佳答案</td><td>每问仅采纳 1 条</td></tr>
+        <tr><td><strong>追问</strong></td><td><code>FollowUp</code></td><td>对回答的后续回复，最多两级</td><td>采纳后关闭追问入口</td></tr>
+        <tr><td><strong>官方号</strong></td><td><code>OfficialAccount</code></td><td>经品牌认证的工程师或产品经理账号</td><td>有 V 认证标识和品牌标签</td></tr>
+        <tr><td><strong>普通用户</strong></td><td><code>RegularUser</code></td><td>已注册但非官方认证的用户</td><td>含车主</td></tr>
+        <tr><td><strong>车主用户</strong></td><td><code>CarOwner</code></td><td>已绑定车辆的用户</td><td>可获取车型和里程信息</td></tr>
+        <tr><td><strong>授权车主</strong></td><td><code>AuthorizedOwner</code></td><td>经过验证的车辆所有者</td><td>权限与车主等价</td></tr>
+        <tr><td><strong>审核</strong></td><td><code>Review</code></td><td>用户提问/回答的内容审核状态</td><td>状态：待审核/通过/驳回</td></tr>
+        <tr><td><strong>推送 UOP</strong></td><td><code>UOP Sync</code></td><td>问题/追问数据同步到 UOP 系统</td><td>状态：未推送/已推送/失败</td></tr>
+        <tr><td><strong>热门</strong></td><td><code>Hot</code></td><td>后台运营标记的热门问题</td><td>仅热门展示在 Hot Tab</td></tr>
+        <tr><td><strong>翻译</strong></td><td><code>Translate</code></td><td>将内容翻译为用户当前语言</td><td>多语言市场需求</td></tr>
+        <tr><td><strong>UOP</strong></td><td><code>UOP</code></td><td>统一运营平台，问题/回答状态同步目标</td><td>外部系统</td></tr>
+        <tr><td><strong>FCM</strong></td><td><code>FCM</code></td><td>Firebase Cloud Messaging，App Push 通道</td><td>跨平台推送</td></tr>
+        <tr><td><strong>敏感词校验</strong></td><td><code>ContentFilter</code></td><td>提交时调用 UOP 接口进行内容安全检测</td><td>不通过则拒绝提交</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- §2 FLOWS — 业务流程（顶部 Tab + 流转胶囊条）                    -->
+<!-- ============================================================ -->
+<section id="flows" class="section-alt">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow"><span class="section-eyebrow-dot"></span> §2 Business Flows</div>
+      <h2 class="section-title">业务流程</h2>
+      <p class="section-subtitle">端到端流转与关键业务流程</p>
+    </div>
+  </div>
+
+  <!-- 端到端流转胶囊条 -->
+  <div class="process-strip">
+    <div class="process-strip-title">核心业务流转</div>
+    <div class="process-strip-flow">
+      <div class="process-step"><div class="process-step-num">1</div><div class="process-step-name">创建圈子</div><div class="process-step-actor">后台管理员 · 5.1</div></div>
+
+      <div class="process-step"><div class="process-step-num">2</div><div class="process-step-name">浏览首页</div><div class="process-step-actor">所有用户 · 5.2</div></div>
+
+      <div class="process-step"><div class="process-step-num">3</div><div class="process-step-name">发布问题</div><div class="process-step-actor">车主 · 5.3</div></div>
+
+      <div class="process-step"><div class="process-step-num">4</div><div class="process-step-name">内容审核</div><div class="process-step-actor">运营 · 5.7+UOP</div></div>
+
+      <div class="process-step"><div class="process-step-num">5</div><div class="process-step-name">查看详情</div><div class="process-step-actor">所有用户 · 5.4</div></div>
+
+      <div class="process-step"><div class="process-step-num">6</div><div class="process-step-name">工程师回答</div><div class="process-step-actor">官方号 · 5.4</div></div>
+
+      <div class="process-step"><div class="process-step-num">7</div><div class="process-step-name">回答审核</div><div class="process-step-actor">运营 · 5.8+UOP</div></div>
+
+      <div class="process-step"><div class="process-step-num">8</div><div class="process-step-name">互动投票</div><div class="process-step-actor">注册用户 · 5.4</div></div>
+
+      <div class="process-step"><div class="process-step-num">9</div><div class="process-step-name">采纳解答</div><div class="process-step-actor">提问者 · 5.4</div></div>
+
+      <div class="process-step"><div class="process-step-num">10</div><div class="process-step-name">消息通知</div><div class="process-step-actor">系统 · 5.6+FCM</div></div>
+    </div>
+  </div>
+
+  <div class="tabs-top" data-tabs="flows">
+    <button class="tab-btn active" data-tab="flow-business">业务流程图</button>
+    <button class="tab-btn" data-tab="flow-page">页面流程图</button>
+    <button class="tab-btn" data-tab="flow-publish">提问审核时序</button>
+    <button class="tab-btn" data-tab="flow-accept">回答采纳时序</button>
+  </div>
+
+  <div class="tab-pane active" id="flow-business">
+    <div class="flowimg">
+      <img src="../asset/flowchart/业务流程.png" alt="业务流程图" data-zoomable data-cap="业务流程图" />
+      <div class="flowimg-caption">业务流程图（完整版）· 点击查看大图</div>
+    </div>
+  </div>
+  <div class="tab-pane" id="flow-page">
+    <div class="flowimg">
+      <img src="../asset/flowchart/页面流程.png" alt="页面流程图" data-zoomable data-cap="页面流程图" />
+      <div class="flowimg-caption">页面流程图 · 点击查看大图</div>
+    </div>
+  </div>
+  <div class="tab-pane" id="flow-publish">
+    <div class="mermaid-wrap"><pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant U as 车主
+    participant App as App 前端
+    participant BE as community-service
+    participant UOP as UOP 平台
+    participant Noti as 消息服务
+
+    U->>App: 填写问题
+    App->>BE: POST /questions
+    BE->>UOP: 敏感词校验
+    alt 校验不通过
+        UOP-->>BE: 拒绝
+        BE-->>App: 4007 CONTENT_SENSITIVE
+    else 校验通过
+        BE->>BE: 落库 PENDING
+        BE->>UOP: 推送审核
+        UOP-->>BE: 异步回调
+        alt 审核通过
+            BE->>BE: 状态 → APPROVED
+        else 审核驳回
+            BE->>Noti: 通知作者（驳回原因）
+        end
+    end
+    </pre></div>
+  </div>
+  <div class="tab-pane" id="flow-accept">
+    <div class="mermaid-wrap"><pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant E as 官方号工程师
+    participant BE as community-service
+    participant U as 提问者
+    participant FCM as FCM Push
+
+    E->>BE: POST /answers
+    BE->>BE: UOP 审核 → APPROVED
+    BE->>FCM: 推送提问者
+    FCM->>U: App Push + 站内通知
+    U->>BE: POST /answers/{id}/accept
+    BE->>BE: 标记已采纳，关闭追问入口
+    BE->>FCM: 推送回答者（被采纳）
+    </pre></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- §3 ARCHITECTURE — 功能架构                                     -->
+<!-- ============================================================ -->
+<section id="architecture">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow"><span class="section-eyebrow-dot"></span> §3 Functional Architecture</div>
+      <h2 class="section-title">功能架构</h2>
+      <p class="section-subtitle">分层组织：移动端（Flutter 原生 + H5 WebView）/ 运营管理后台（Vue 3）/ 后端服务（Spring Cloud 微服务）</p>
+    </div>
+  </div>
+  <div class="fntree">
+    <div class="fntree-row cols-2">
+      <div class="fntree-layer clr-blue">
+        <div class="fntree-layer-head">
+          <span class="fntree-layer-icon">🧩</span>
+          <div>
+            <div class="fntree-layer-title">在线工程师层 · APP 端</div>
+            <div class="fntree-layer-sub">Flutter 原生 · GAC APP 内嵌</div>
+          </div>
+        </div>
+        <div class="fntree-modules">
+          <div class="fntree-mod"><span class="fntree-mod-id">5.2</span><span>圈子首页（品牌区+统计+Tab+列表）</span></div>
+          <div class="fntree-mod"><span class="fntree-mod-id">5.3</span><span>问题发布（标题/描述/图片/视频/车型/里程）</span></div>
+          <div class="fntree-mod"><span class="fntree-mod-id">5.5</span><span>搜索（ES + IK + ICU 分词，关键词高亮）</span></div>
+          <div class="fntree-mod"><span class="fntree-mod-id">5.6</span><span>消息通知（系统消息中心，未读红点）</span></div>
+        </div>
+      </div>
+      <div class="fntree-layer clr-green">
+        <div class="fntree-layer-head">
+          <span class="fntree-layer-icon">🌐</span>
+          <div>
+            <div class="fntree-layer-title">在线工程师层 · H5 WebView</div>
+            <div class="fntree-layer-sub">Vue 3 + NuxtJS + Vant · 唯一非原生页面</div>
+          </div>
+        </div>
+        <div class="fntree-modules">
+          <div class="fntree-mod"><span class="fntree-mod-id">5.4</span><span>问题详情（问题区+回答列表+嵌套回复+投票+采纳+翻译）</span></div>
+        </div>
+      </div>
+      <div class="fntree-layer clr-purple">
+        <div class="fntree-layer-head">
+          <span class="fntree-layer-icon">💻</span>
+          <div>
+            <div class="fntree-layer-title">平台层 · 运营管理后台</div>
+            <div class="fntree-layer-sub">Vue 3 + Ant Design Vue</div>
+          </div>
+        </div>
+        <div class="fntree-modules">
+          <div class="fntree-mod"><span class="fntree-mod-id">5.1</span><span>圈子管理（创建/配置/权限/多语言）</span></div>
+          <div class="fntree-mod"><span class="fntree-mod-id">5.7</span><span>问题管理（审核/公开-隐藏/热门/UOP 同步）</span></div>
+          <div class="fntree-mod"><span class="fntree-mod-id">5.8</span><span>回答管理（审核/UOP 同步/批量操作）</span></div>
+          <div class="fntree-mod"><span class="fntree-mod-id">5.9</span><span>用户管理（官方号设置/隐私脱敏）</span></div>
+        </div>
+      </div>
+      <div class="fntree-layer clr-orange">
+        <div class="fntree-layer-head">
+          <span class="fntree-layer-icon">⚙️</span>
+          <div>
+            <div class="fntree-layer-title">后端服务层</div>
+            <div class="fntree-layer-sub">Spring Cloud + Nacos · 微服务架构</div>
+          </div>
+        </div>
+        <div class="fntree-modules">
+          <div class="fntree-mod"><span class="fntree-mod-id">⭐</span><span>community-service（新建：问题/回答/圈子/投票）</span></div>
+          <div class="fntree-mod"><span class="fntree-mod-id">复用</span><span>user-service / message-service / file-service</span></div>
+          <div class="fntree-mod"><span class="fntree-mod-id">复用</span><span>audit-service（UOP 对接）/ translate-service</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- §4 MODULES — 模块详情（左右联动）                                -->
+<!-- ============================================================ -->
+<section id="modules" class="section-alt">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow"><span class="section-eyebrow-dot"></span> §4 Module Details</div>
+      <h2 class="section-title">模块详情</h2>
+      <p class="section-subtitle">点击左侧模块查看：核心功能、关联实体/API、Permission Code、关键业务规则、原型</p>
+    </div>
+  </div>
+  <div class="splitview">
+    <div class="splitview-list" data-sv="modules">
+      <div class="splitview-item clr-purple active" data-svtarget="mod-5-1"><span class="sv-id">5.1</span><span class="sv-name">圈子管理（管理后台）</span></div>
+      <div class="splitview-item clr-blue" data-svtarget="mod-5-2"><span class="sv-id">5.2</span><span class="sv-name">圈子首页</span></div>
+      <div class="splitview-item clr-blue" data-svtarget="mod-5-3"><span class="sv-id">5.3</span><span class="sv-name">问题发布</span></div>
+      <div class="splitview-item clr-green" data-svtarget="mod-5-4"><span class="sv-id">5.4</span><span class="sv-name">问题详情</span></div>
+      <div class="splitview-item clr-blue" data-svtarget="mod-5-5"><span class="sv-id">5.5</span><span class="sv-name">搜索</span></div>
+      <div class="splitview-item clr-blue" data-svtarget="mod-5-6"><span class="sv-id">5.6</span><span class="sv-name">消息通知</span></div>
+      <div class="splitview-item clr-purple" data-svtarget="mod-5-7"><span class="sv-id">5.7</span><span class="sv-name">问题管理（管理后台）</span></div>
+      <div class="splitview-item clr-purple" data-svtarget="mod-5-8"><span class="sv-id">5.8</span><span class="sv-name">回答管理（管理后台）</span></div>
+      <div class="splitview-item clr-purple" data-svtarget="mod-5-9"><span class="sv-id">5.9</span><span class="sv-name">用户管理（管理后台）</span></div>
+    </div>
+    <div class="splitview-detail">
+
+      <!-- 5.1 圈子管理 -->
+      <div class="sv-pane clr-purple active" id="mod-5-1">
+        <div class="modhead">
+          <div class="modhead-meta">
+            <span class="badge clr-purple" style="background:var(--c-bg);color:var(--c-strong);border-color:var(--c-border);">模块 5.1</span>
+            <span class="badge badge-danger">P0</span>
+            <span class="tag clr-purple">Vue 3 + AntD</span>
+            <span class="badge badge-neutral">平台层</span>
+          </div>
+          <h3 class="modhead-title">圈子管理（管理后台）</h3>
+          <p class="modhead-desc">后台管理员创建和配置社区圈子，控制圈子的内容类型、功能开关与权限。"在线工程师"是其中一个圈子实例。</p>
+        </div>
+        <div class="modgrid cols-2">
+          <div class="modblock"><h4>📋 核心功能</h4><ul>
+            <li>创建/编辑/启用停用圈子</li>
+            <li>圈子类型：在线工程师/产品社区/车型/其他</li>
+            <li>多语言名称与描述（+ Lang 按钮）</li>
+            <li>权限配置：访问/发表/回复/追问</li>
+            <li>功能开关：回复 / 图片 / 视频 / 选择车辆 / 累计公里数</li>
+            <li>排序管理（数字越小排越前）</li>
+          </ul></div>
+          <div class="modblock"><h4>🔗 关联实体 / API</h4><ul>
+            <li><code>Group</code> · <code>GroupTranslation</code></li>
+            <li><code>GET /admin/groups</code></li>
+            <li><code>POST/PUT/DELETE /admin/groups</code></li>
+            <li><code>GET /groups/{id}/config</code></li>
+          </ul>
+          <h4 style="margin-top:1rem;">🔐 Permission Code</h4><ul>
+            <li><code>group:view:any</code></li>
+            <li><code>group:manage:any</code></li>
+          </ul></div>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>📐 关键业务规则</h4>
+          <ul class="br-list br-list-wrap" data-collapse>
+            <li><span class="br-code">BR-5.1-01</span><span style="flex:1;">圈子名称在同一系统内不可重复</span></li>
+            <li><span class="br-code">BR-5.1-02</span><span style="flex:1;">圈子类型创建后不可修改</span></li>
+            <li><span class="br-code">BR-5.1-03</span><span style="flex:1;">停用圈子后，移动端不再展示该圈子入口，已有内容保留但不可访问</span></li>
+            <li><span class="br-code">BR-5.1-04</span><span style="flex:1;">删除圈子前需确认，圈子内有内容时需二次确认"删除圈子将同时删除所有内容"</span></li>
+            <li><span class="br-code">BR-5.1-05</span><span style="flex:1;">排序字段控制圈子在移动端的展示顺序，数字越小排越前</span></li>
+            <li class="hidden"><span class="br-code">BR-5.1-06</span><span style="flex:1;">多语言名称和描述中，至少需填写一种语言</span></li>
+          </ul>
+          <button class="br-expand-btn" data-expand-btn>展开剩余 1 条 ↓</button>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>✅ 验收标准（AC）</h4>
+          <ul class="ac-list">
+            <li><span class="ac-code">AC-5.1-01</span><span style="flex:1;"><strong>Given</strong> 管理员在圈子管理页 <strong>When</strong> 点击创建并填写完整信息后发布 <strong>Then</strong> 圈子创建成功，列表中出现新圈子</span></li>
+            <li><span class="ac-code">AC-5.1-04</span><span style="flex:1;"><strong>Given</strong> 已存在名为"Engineer Online"的圈子 <strong>When</strong> 创建同名圈子 <strong>Then</strong> 提示"圈子名称已存在"，不允许创建</span></li>
+            <li><span class="ac-code">AC-5.1-05</span><span style="flex:1;"><strong>Given</strong> 圈子内有 100 条问题 <strong>When</strong> 管理员删除圈子 <strong>Then</strong> 弹出确认框提示内容数量，确认后圈子及所有内容删除</span></li>
+          </ul>
+        </div>
+        <div style="margin-top:1rem;">
+          <button class="modlink clr-purple" data-protoview="../asset/prototype/圈子管理.png" data-protoname="5.1 圈子管理">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>查看原型
+          </button>
+        </div>
+      </div>
+
+      <!-- 5.2 圈子首页 -->
+      <div class="sv-pane clr-blue" id="mod-5-2">
+        <div class="modhead">
+          <div class="modhead-meta">
+            <span class="badge clr-blue" style="background:var(--c-bg);color:var(--c-strong);border-color:var(--c-border);">模块 5.2</span>
+            <span class="badge badge-danger">P0</span>
+            <span class="tag clr-blue">Flutter 原生</span>
+            <span class="badge badge-neutral">在线工程师层</span>
+          </div>
+          <h3 class="modhead-title">圈子首页</h3>
+          <p class="modhead-desc">用户进入"在线工程师"社区首页，浏览问题列表，支持 Hot / Newest / My Question 三种 Tab。</p>
+        </div>
+        <div class="modgrid cols-2">
+          <div class="modblock"><h4>📋 核心功能</h4><ul>
+            <li>品牌区：Logo + 简介 + Learn more 弹窗</li>
+            <li>数据统计：累计问题/累计回复/今日发帖（千分号）</li>
+            <li>Tab 切换：Hot / Newest / My Question</li>
+            <li>问题卡片：标题（3行）/ 描述（3行）/ 图片（最多3张）/ 回答预览（2条）</li>
+            <li>底部固定 Ask a Question 按钮（黑色）</li>
+            <li>cursor 分页 20 条/页，无限滚动</li>
+          </ul></div>
+          <div class="modblock"><h4>🔗 关联实体 / API</h4><ul>
+            <li><code>Question</code></li>
+            <li><code>GET /groups/{groupId}/questions</code></li>
+            <li><code>GET /groups/{groupId}/stats</code></li>
+          </ul>
+          <h4 style="margin-top:1rem;">🔐 Permission Code</h4><ul>
+            <li><code>question:view:any</code></li>
+            <li><code>question:view:own</code>（My Question Tab）</li>
+          </ul></div>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>📐 关键业务规则</h4>
+          <ul class="br-list br-list-wrap" data-collapse>
+            <li><span class="br-code">BR-5.2-01</span><span style="flex:1;">仅显示审核通过且公开的问题</span></li>
+            <li><span class="br-code">BR-5.2-02</span><span style="flex:1;">问题卡片中的回答预览最多显示 2 条，已采纳优先 → 回复时间倒序</span></li>
+            <li><span class="br-code">BR-5.2-03</span><span style="flex:1;">统计数字格式化：显示具体数字，带千分号（如 1,200,000）</span></li>
+            <li><span class="br-code">BR-5.2-04</span><span style="flex:1;">发布时间采用相对时间（Just now / N m ago / N h ago / N d ago / YYYY-MM-DD HH:mm）</span></li>
+            <li><span class="br-code">BR-5.2-05</span><span style="flex:1;">My Question Tab 需要登录，未登录时点击该 Tab 触发登录引导</span></li>
+            <li class="hidden"><span class="br-code">BR-5.2-06</span><span style="flex:1;">无限滚动加载，每次 20 条，无更多数据时显示"No more questions"</span></li>
+            <li class="hidden"><span class="br-code">BR-5.2-07</span><span style="flex:1;">最热 Tab 访问权限：圈子配置为部分用户时，未登录提示登录，已登录提示访问受限</span></li>
+            <li class="hidden"><span class="br-code">BR-5.2-08</span><span style="flex:1;">问题卡片中的最新回答区域最多显示 2 条，已采纳优先 → 回复时间倒序</span></li>
+            <li class="hidden"><span class="br-code">BR-5.2-09</span><span style="flex:1;">提问按钮为底部浮动按钮，若不符合圈子发表权限则弹窗提示</span></li>
+          </ul>
+          <button class="br-expand-btn" data-expand-btn>展开剩余 4 条 ↓</button>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>✅ 验收标准（AC）</h4>
+          <ul class="ac-list">
+            <li><span class="ac-code">AC-5.2-01</span><span style="flex:1;"><strong>Given</strong> 用户进入首页 <strong>When</strong> 页面加载完成 <strong>Then</strong> 显示 Hot Tab 下的问题列表，统计数据正确</span></li>
+            <li><span class="ac-code">AC-5.2-04</span><span style="flex:1;"><strong>Given</strong> 用户未登录 <strong>When</strong> 点击 My Question Tab <strong>Then</strong> 跳转到登录页</span></li>
+            <li><span class="ac-code">AC-5.2-07</span><span style="flex:1;"><strong>Given</strong> 问题发布时间为 2 小时前 <strong>When</strong> 显示问题卡片 <strong>Then</strong> 时间显示为"2 hours ago"</span></li>
+          </ul>
+        </div>
+        <div style="margin-top:1rem;">
+          <button class="modlink clr-blue" data-protoview="../asset/prototype/圈子首页.png" data-protoname="5.2 圈子首页">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>查看原型
+          </button>
+        </div>
+      </div>
+
+      <!-- 5.3 问题发布 -->
+      <div class="sv-pane clr-blue" id="mod-5-3">
+        <div class="modhead">
+          <div class="modhead-meta">
+            <span class="badge clr-blue" style="background:var(--c-bg);color:var(--c-strong);border-color:var(--c-border);">模块 5.3</span>
+            <span class="badge badge-danger">P0</span>
+            <span class="tag clr-blue">Flutter 原生</span>
+            <span class="badge badge-neutral">在线工程师层</span>
+          </div>
+          <h3 class="modhead-title">问题发布</h3>
+          <p class="modhead-desc">车主填写问题标题、描述、上传图片，关联车型和里程后发布提问。提交前先调用 UOP 敏感词校验。</p>
+        </div>
+        <div class="modgrid cols-2">
+          <div class="modblock"><h4>📋 核心功能</h4><ul>
+            <li>标题输入（必填，5-400 字符）</li>
+            <li>描述输入（选填，≤10,000 字符）</li>
+            <li>图片/视频上传：图片 ≤9 张 5MB，视频 ≤50MB 60s</li>
+            <li>车型选择（圈子配置启用时显示）</li>
+            <li>累计里程输入</li>
+            <li>OSS 直传 + 客户端压缩</li>
+          </ul></div>
+          <div class="modblock"><h4>🔗 关联实体 / API</h4><ul>
+            <li><code>Question</code></li>
+            <li><code>POST /groups/{groupId}/questions</code></li>
+            <li><code>POST /upload/presign</code></li>
+            <li><code>POST /content/check</code>（敏感词）</li>
+          </ul>
+          <h4 style="margin-top:1rem;">🔐 Permission Code</h4><ul>
+            <li><code>question:create:any</code>（受 post_roles 限制）</li>
+          </ul></div>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>📐 关键业务规则</h4>
+          <ul class="br-list br-list-wrap" data-collapse>
+            <li><span class="br-code">BR-5.3-01</span><span style="flex:1;">标题为必填，5-400 字符</span></li>
+            <li><span class="br-code">BR-5.3-02</span><span style="flex:1;">描述为选填，最多 10,000 字符</span></li>
+            <li><span class="br-code">BR-5.3-03</span><span style="flex:1;">图片/视频合计最多 9 个，图片单张 ≤5MB，视频单个 ≤50MB / 60s（遵循 GR-CONTENT-02/03）</span></li>
+            <li><span class="br-code">BR-5.3-04</span><span style="flex:1;">选择车辆：圈子启用且用户为车主/授权车主时显示，必填，默认当前默认车辆</span></li>
+            <li><span class="br-code">BR-5.3-05</span><span style="flex:1;">总里程：圈子启用且用户为车主/授权车主时显示，必填，弹窗输入</span></li>
+            <li class="hidden"><span class="br-code">BR-5.3-06</span><span style="flex:1;">提交时调用 UOP 敏感词校验，不通过则弹窗提示用户，可修改后重新提交</span></li>
+            <li class="hidden"><span class="br-code">BR-5.3-07</span><span style="flex:1;">问题提交成功后弹窗提示发表成功+运营工作时间，审核通过前仅发布者本人可见</span></li>
+            <li class="hidden"><span class="br-code">BR-5.3-08</span><span style="flex:1;">发表按钮默认置灰，必填项完成且无上传中文件时变为可点击；提交中显示加载动画</span></li>
+            <li class="hidden"><span class="br-code">BR-5.3-09</span><span style="flex:1;">圈子配置中"选择车辆"和"公里数"开关控制是否显示对应字段</span></li>
+            <li class="hidden"><span class="br-code">BR-5.3-10</span><span style="flex:1;">上传交互：上传中显示"取消"按钮，成功后显示"移除"按钮，可点击预览</span></li>
+            <li class="hidden"><span class="br-code">BR-5.3-11</span><span style="flex:1;">图片/视频走 OSS 直传：presign → PUT OSS → confirm，仅提交已成功上传的 CDN URL</span></li>
+            <li class="hidden"><span class="br-code">BR-5.3-12</span><span style="flex:1;">客户端压缩：图片 1920px / 80% 质量（≤2MB），视频 720p / 2Mbps</span></li>
+          </ul>
+          <button class="br-expand-btn" data-expand-btn>展开剩余 7 条 ↓</button>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>✅ 验收标准（AC）</h4>
+          <ul class="ac-list">
+            <li><span class="ac-code">AC-5.3-01</span><span style="flex:1;"><strong>Given</strong> 用户已登录 <strong>When</strong> 填写标题并点击 Post <strong>Then</strong> 问题提交成功，提示"发布成功"，返回首页</span></li>
+            <li><span class="ac-code">AC-5.3-05</span><span style="flex:1;"><strong>Given</strong> 标题仅输入 2 个字符 <strong>When</strong> 点击 Post <strong>Then</strong> 提示标题过短</span></li>
+            <li><span class="ac-code">AC-5.3-06</span><span style="flex:1;"><strong>Given</strong> 用户已上传 9 张图片 <strong>When</strong> 尝试继续上传 <strong>Then</strong> "+"号消失，不允许继续上传</span></li>
+          </ul>
+        </div>
+        <div style="margin-top:1rem;">
+          <button class="modlink clr-blue" data-protoview="../asset/prototype/提问页.png" data-protoname="5.3 问题发布">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>查看原型
+          </button>
+        </div>
+      </div>
+
+      <!-- 5.4 问题详情 -->
+      <div class="sv-pane clr-green" id="mod-5-4">
+        <div class="modhead">
+          <div class="modhead-meta">
+            <span class="badge clr-green" style="background:var(--c-bg);color:var(--c-strong);border-color:var(--c-border);">模块 5.4</span>
+            <span class="badge badge-danger">P0</span>
+            <span class="tag clr-green">H5 WebView</span>
+            <span class="badge badge-neutral">唯一非原生页面</span>
+          </div>
+          <h3 class="modhead-title">问题详情</h3>
+          <p class="modhead-desc">用户查看问题详情、浏览工程师回答、进行追问/投票/采纳/翻译。Vue 3 + NuxtJS + Vant，以 WebView 形式嵌入 GAC APP。</p>
+        </div>
+        <div class="modgrid cols-2">
+          <div class="modblock"><h4>📋 核心功能</h4><ul>
+            <li>问题区：作者 / 标题 / 内容 / 媒体 / 车型 / 时间</li>
+            <li>回答列表（顶层回答仅官方号）</li>
+            <li>嵌套回复（最多两级）</li>
+            <li>投票（赞/踩互斥，1s 防抖）</li>
+            <li>采纳（仅问题作者，1 条上限）</li>
+            <li>翻译（Google Translate，缓存 7 天）</li>
+            <li>分享（仅审核通过且公开时显示）</li>
+          </ul></div>
+          <div class="modblock"><h4>🔗 关联实体 / API</h4><ul>
+            <li><code>Question</code> · <code>Answer</code> · <code>Vote</code></li>
+            <li><code>GET /questions/{id}</code></li>
+            <li><code>POST /questions/{id}/answers</code></li>
+            <li><code>POST /answers/{id}/vote</code></li>
+            <li><code>POST /answers/{id}/accept</code></li>
+          </ul>
+          <h4 style="margin-top:1rem;">🔐 Permission Code</h4><ul>
+            <li><code>question:view:any</code></li>
+            <li><code>answer:create:any</code> / <code>answer:reply:any</code></li>
+            <li><code>answer:accept:own</code> / <code>vote:cast:any</code></li>
+          </ul></div>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>📐 关键业务规则</h4>
+          <ul class="br-list br-list-wrap" data-collapse>
+            <li><span class="br-code">BR-5.4-01</span><span style="flex:1;">回答列表排序规则：已采纳排在最前，其余按回复时间倒序排列</span></li>
+            <li><span class="br-code">BR-5.4-02</span><span style="flex:1;">官方号回答展示 GAC 品牌标签和官方号名称</span></li>
+            <li><span class="br-code">BR-5.4-03</span><span style="flex:1;">Accept 按钮仅对问题作者可见，仅可对 1 个一级回答采纳；采纳后问题归档不允许再回复</span></li>
+            <li><span class="br-code">BR-5.4-04</span><span style="flex:1;">同一回答只能赞或踩其一，再次点击同类型则取消；UK (user_id, answer_id) 唯一</span></li>
+            <li><span class="br-code">BR-5.4-05</span><span style="flex:1;">问题作者在评论区以红色 "Author" 标签标识</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-06</span><span style="flex:1;">嵌套回复以 "A ▸ B" 格式显示回复关系</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-07</span><span style="flex:1;">翻译按钮点击后替换原文显示译文，再次点击恢复原文</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-08</span><span style="flex:1;">删除问题需二次确认，删除后同步状态到 UOP，列表显示暗色"问题已删除"</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-09</span><span style="flex:1;">详情页时间格式（GR-TIME-01）：Just now / N m / N h / N d / YYYY-MM-DD HH:mm</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-10</span><span style="flex:1;">回答和回复发布时调用 UOP 敏感词校验，不通过则 Toast"存在敏感信息"</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-11</span><span style="flex:1;">用户可对工程师回答及其二级回复发起追问，追问走同样的发布和审核流程</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-12</span><span style="flex:1;">采纳任一回答后整个问题归档，关闭所有回复入口；采纳状态同步推送 UOP</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-13</span><span style="flex:1;">嵌套回复最多两层（回答 → 回复 → 回复的回复），parent_id 指向直接父回复</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-14</span><span style="flex:1;">一级回答和二级回复的图片/视频最多显示 3 个，超出最后一张图显示"N Items"</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-15</span><span style="flex:1;">赞/踩操作防抖：UI 立即反馈，1s 后请求后端；1s 内重复点击则按最近时间再延后 1s</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-16</span><span style="flex:1;">二级回复内容前显示 "Reply {被回复人昵称}: " 前缀</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-17</span><span style="flex:1;">翻译按钮显示规则：内容语言与 App 设置语言不一致时显示；google_mlkit_language_id 检测语言</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-18</span><span style="flex:1;">分享按钮显示条件：审核通过且公开状态为"公开"时才显示</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-19</span><span style="flex:1;">回答列表使用 cursor 分页，每次加载 10 条</span></li>
+            <li class="hidden"><span class="br-code">BR-5.4-20</span><span style="flex:1;">底部回复入口：根据圈子回复权限配置，无权限时 Toast，有权限时弹出回复输入框</span></li>
+          </ul>
+          <button class="br-expand-btn" data-expand-btn>展开剩余 15 条 ↓</button>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>✅ 验收标准（AC）</h4>
+          <ul class="ac-list">
+            <li><span class="ac-code">AC-5.4-03</span><span style="flex:1;"><strong>Given</strong> 问题作者查看详情 <strong>When</strong> 某回答未被采纳 <strong>Then</strong> 该回答显示 "Accept" 按钮</span></li>
+            <li><span class="ac-code">AC-5.4-05</span><span style="flex:1;"><strong>Given</strong> 用户已赞过 <strong>When</strong> 再次点击赞 <strong>Then</strong> 取消赞，赞数 -1</span></li>
+            <li><span class="ac-code">AC-5.4-06</span><span style="flex:1;"><strong>Given</strong> Billy 回复了 Wayne 的回答 <strong>When</strong> 查看回复 <strong>Then</strong> 显示 "Wayne ▸ Billy" 及 Author 红色标签</span></li>
+            <li><span class="ac-code">AC-5.4-10</span><span style="flex:1;"><strong>Given</strong> 用户已赞某回答 <strong>When</strong> 点击踩按钮 <strong>Then</strong> 赞取消，踩 +1（互斥切换）</span></li>
+          </ul>
+        </div>
+        <div style="margin-top:1rem;">
+          <button class="modlink clr-green" data-protoview="../asset/prototype/问题详情.png" data-protoname="5.4 问题详情">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>查看原型
+          </button>
+        </div>
+      </div>
+
+      <!-- 5.5 搜索 -->
+      <div class="sv-pane clr-blue" id="mod-5-5">
+        <div class="modhead">
+          <div class="modhead-meta">
+            <span class="badge clr-blue" style="background:var(--c-bg);color:var(--c-strong);border-color:var(--c-border);">模块 5.5</span>
+            <span class="badge badge-warning">P1</span>
+            <span class="tag clr-blue">Flutter 原生</span>
+            <span class="badge badge-neutral">在线工程师层</span>
+          </div>
+          <h3 class="modhead-title">搜索</h3>
+          <p class="modhead-desc">基于 Elasticsearch（IK + ICU 双分词器）的全文检索，搜索范围为问题标题 + 内容。命中关键词以红色高亮。</p>
+        </div>
+        <div class="modgrid cols-2">
+          <div class="modblock"><h4>📋 核心功能</h4><ul>
+            <li>搜索输入框（自动获取焦点）</li>
+            <li>搜索结果列表（关键词红色高亮）</li>
+            <li>cursor 无限滚动，每次 20 条</li>
+            <li>仅搜索 review_status=APPROVED &amp; public_status=PUBLIC</li>
+            <li>function_score：标题 ^3 / 内容 ^1 + 时间高斯衰减 + 回答数加成</li>
+          </ul></div>
+          <div class="modblock"><h4>🔗 关联实体 / API</h4><ul>
+            <li><code>Question</code>（ES 索引）</li>
+            <li><code>GET /questions/search</code></li>
+          </ul>
+          <h4 style="margin-top:1rem;">🔍 分词器</h4><ul>
+            <li>IK Analyzer（中文：ik_max_word / ik_smart）</li>
+            <li>ICU Analyzer（泰语 / 老挝语）</li>
+          </ul></div>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>📐 关键业务规则</h4>
+          <ul class="br-list br-list-wrap" data-collapse>
+            <li><span class="br-code">BR-5.5-01</span><span style="flex:1;">搜索范围为问题标题和内容（不含回答内容）</span></li>
+            <li><span class="br-code">BR-5.5-02</span><span style="flex:1;">关键词在标题和描述中以红色高亮显示，使用 <code>&lt;em class="highlight"&gt;</code> 包裹</span></li>
+            <li><span class="br-code">BR-5.5-03</span><span style="flex:1;">仅搜索 review_status=APPROVED 且 public_status=PUBLIC 的问题</span></li>
+            <li><span class="br-code">BR-5.5-04</span><span style="flex:1;">function_score 排序：标题加权 + 时间衰减 + 回答数加成</span></li>
+            <li><span class="br-code">BR-5.5-05</span><span style="flex:1;">每次加载 20 条，cursor 分页避免数据漂移</span></li>
+            <li class="hidden"><span class="br-code">BR-5.5-06</span><span style="flex:1;">搜索结果卡片中的缩略图取问题的第一张图片</span></li>
+            <li class="hidden"><span class="br-code">BR-5.5-07</span><span style="flex:1;">主搜索使用 Elasticsearch；ES 不可用时降级到 MySQL LIKE 兜底</span></li>
+          </ul>
+          <button class="br-expand-btn" data-expand-btn>展开剩余 2 条 ↓</button>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>✅ 验收标准（AC）</h4>
+          <ul class="ac-list">
+            <li><span class="ac-code">AC-5.5-01</span><span style="flex:1;"><strong>Given</strong> 用户进入搜索页 <strong>When</strong> 输入"AION V"并搜索 <strong>Then</strong> 显示包含"AION V"的问题列表，关键词以红色高亮</span></li>
+            <li><span class="ac-code">AC-5.5-02</span><span style="flex:1;"><strong>Given</strong> 搜索结果存在 <strong>When</strong> 点击某条结果 <strong>Then</strong> 跳转到该问题的详情页</span></li>
+            <li><span class="ac-code">AC-5.5-03</span><span style="flex:1;"><strong>Given</strong> 用户在搜索页 <strong>When</strong> 输入无匹配的关键词 <strong>Then</strong> 显示"未找到相关问题"</span></li>
+          </ul>
+        </div>
+        <div style="margin-top:1rem;">
+          <button class="modlink clr-blue" data-protoview="../asset/prototype/搜索页.png" data-protoname="5.5 搜索">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>查看原型
+          </button>
+        </div>
+      </div>
+
+      <!-- 5.6 消息通知 -->
+      <div class="sv-pane clr-blue" id="mod-5-6">
+        <div class="modhead">
+          <div class="modhead-meta">
+            <span class="badge clr-blue" style="background:var(--c-bg);color:var(--c-strong);border-color:var(--c-border);">模块 5.6</span>
+            <span class="badge badge-warning">P1</span>
+            <span class="tag clr-blue">Flutter 原生</span>
+            <span class="badge badge-neutral">在线工程师层</span>
+          </div>
+          <h3 class="modhead-title">消息通知</h3>
+          <p class="modhead-desc">用户消息中心，汇总系统通知（工程师回复 / 审核结果 / 采纳通知）。复用 GAC APP 系统消息通道。</p>
+        </div>
+        <div class="modgrid cols-2">
+          <div class="modblock"><h4>📋 核心功能</h4><ul>
+            <li>系统消息列表（按时间倒序）</li>
+            <li>未读红点标识</li>
+            <li>点击通知 → 跳转对应问题详情</li>
+            <li>点击后自动标记已读</li>
+            <li>FCM Push + 站内通知双通道</li>
+          </ul></div>
+          <div class="modblock"><h4>🔗 关联实体 / API</h4><ul>
+            <li><code>Notification</code></li>
+            <li><code>GET /notifications</code></li>
+            <li><code>GET /notifications/unread-count</code></li>
+            <li><code>PUT /notifications/{id}/read</code></li>
+          </ul>
+          <h4 style="margin-top:1rem;">🔐 Permission Code</h4><ul>
+            <li><code>notification:read:own</code></li>
+            <li><code>notification:clear:own</code></li>
+          </ul></div>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>📐 关键业务规则</h4>
+          <ul class="br-list br-list-wrap" data-collapse>
+            <li><span class="br-code">BR-5.6-01</span><span style="flex:1;">本模块通知统一归类为系统消息（复用 APP 系统消息通道）</span></li>
+            <li><span class="br-code">BR-5.6-02</span><span style="flex:1;">未读通知标题前显示红色圆点</span></li>
+            <li><span class="br-code">BR-5.6-03</span><span style="flex:1;">点击通知后自动标记为已读</span></li>
+            <li><span class="br-code">BR-5.6-04</span><span style="flex:1;">通知按时间倒序排列（最新在最前）</span></li>
+            <li><span class="br-code">BR-5.6-05</span><span style="flex:1;">工程师回复通知模板："{engineer name} has replied to your question."</span></li>
+          </ul>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>✅ 验收标准（AC）</h4>
+          <ul class="ac-list">
+            <li><span class="ac-code">AC-5.6-01</span><span style="flex:1;"><strong>Given</strong> 工程师已回答用户问题 <strong>When</strong> 用户进入消息页 <strong>Then</strong> 显示工程师回复通知，带红色未读圆点</span></li>
+            <li><span class="ac-code">AC-5.6-02</span><span style="flex:1;"><strong>Given</strong> 用户有未读通知 <strong>When</strong> 点击该通知 <strong>Then</strong> 跳转问题详情，红点消失</span></li>
+          </ul>
+        </div>
+        <div style="margin-top:1rem;">
+          <button class="modlink clr-blue" data-protoview="../asset/prototype/消息通知.png" data-protoname="5.6 消息通知">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>查看原型
+          </button>
+        </div>
+      </div>
+
+      <!-- 5.7 问题管理 -->
+      <div class="sv-pane clr-purple" id="mod-5-7">
+        <div class="modhead">
+          <div class="modhead-meta">
+            <span class="badge clr-purple" style="background:var(--c-bg);color:var(--c-strong);border-color:var(--c-border);">模块 5.7</span>
+            <span class="badge badge-danger">P0</span>
+            <span class="tag clr-purple">Vue 3 + AntD</span>
+            <span class="badge badge-neutral">平台层</span>
+          </div>
+          <h3 class="modhead-title">问题管理（管理后台）</h3>
+          <p class="modhead-desc">运营在后台对问题进行审核、公开/隐藏、热门标记、UOP 同步、查看回复等操作。</p>
+        </div>
+        <div class="modgrid cols-2">
+          <div class="modblock"><h4>📋 核心功能</h4><ul>
+            <li>问题列表（多维度筛选）</li>
+            <li>审核：通过 / 驳回</li>
+            <li>设为热门 / 取消热门</li>
+            <li>公开 / 不公开</li>
+            <li>查看回复（弹窗，含批量审核）</li>
+            <li>推送 UOP（同步状态：未推送/已推送/失败）</li>
+            <li>批量操作 ≤100 条，删除/驳回需二次确认</li>
+          </ul></div>
+          <div class="modblock"><h4>🔗 关联实体 / API</h4><ul>
+            <li><code>Question</code> · <code>AuditLog</code></li>
+            <li><code>GET /admin/questions</code></li>
+            <li><code>POST /admin/questions/{id}/audit</code></li>
+            <li><code>POST /admin/questions/batch</code></li>
+          </ul>
+          <h4 style="margin-top:1rem;">🔐 Permission Code</h4><ul>
+            <li><code>question:audit:any</code></li>
+            <li><code>question:delete:any</code></li>
+          </ul></div>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>📐 关键业务规则</h4>
+          <ul class="br-list br-list-wrap" data-collapse>
+            <li><span class="br-code">BR-5.7-01</span><span style="flex:1;">问题列表默认按排序序号升序、创建时间倒序排列；排序数字越小越靠前</span></li>
+            <li><span class="br-code">BR-5.7-02</span><span style="flex:1;">发布人手机号/邮箱脱敏显示（中间字符替换为 ***）</span></li>
+            <li><span class="br-code">BR-5.7-03</span><span style="flex:1;">热门操作：标记为热门的问题在移动端列表中获得更高排序权重</span></li>
+            <li><span class="br-code">BR-5.7-04</span><span style="flex:1;">隐藏操作：隐藏后问题在移动端不可见，但后台仍可管理</span></li>
+            <li><span class="br-code">BR-5.7-07</span><span style="flex:1;">审核驳回时必须填写驳回原因</span></li>
+            <li class="hidden"><span class="br-code">BR-5.7-08</span><span style="flex:1;">所有管理操作记录操作日志（操作人、时间、类型、对象、变更前后值）</span></li>
+            <li class="hidden"><span class="br-code">BR-5.7-09</span><span style="flex:1;">批量操作一次最多选择 100 条</span></li>
+            <li class="hidden"><span class="br-code">BR-5.7-10</span><span style="flex:1;">删除操作需二次确认，不可撤销</span></li>
+            <li class="hidden"><span class="br-code">BR-5.7-11</span><span style="flex:1;">推送到 UOP：通过 UOP 问题推送接口同步，状态实时显示</span></li>
+            <li class="hidden"><span class="br-code">BR-5.7-12</span><span style="flex:1;">查看回复弹窗中，回复支持单条审核和批量审核（≤100 条）</span></li>
+            <li class="hidden"><span class="br-code">BR-5.7-13</span><span style="flex:1;">一级回答的父回答 ID 为空；二级回复的父回答 ID 为被回复回答 ID</span></li>
+          </ul>
+          <button class="br-expand-btn" data-expand-btn>展开剩余 6 条 ↓</button>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>✅ 验收标准（AC）</h4>
+          <ul class="ac-list">
+            <li><span class="ac-code">AC-5.7-02</span><span style="flex:1;"><strong>Given</strong> 管理员查看某问题 <strong>When</strong> 点击审核通过 <strong>Then</strong> 状态变为"已通过"，移动端可见</span></li>
+            <li><span class="ac-code">AC-5.7-03</span><span style="flex:1;"><strong>Given</strong> 管理员驳回问题 <strong>When</strong> 填写驳回原因并提交 <strong>Then</strong> 状态变为"已驳回"，发布者收到通知</span></li>
+            <li><span class="ac-code">AC-5.7-09</span><span style="flex:1;"><strong>Given</strong> 管理员选中 2 条问题 <strong>When</strong> 点击"推送到 UOP" <strong>Then</strong> 同步到 UOP，状态变为"已推送"</span></li>
+            <li><span class="ac-code">AC-5.7-13</span><span style="flex:1;"><strong>Given</strong> 管理员选中 101 条 <strong>When</strong> 点击批量删除 <strong>Then</strong> 提示"单次批量操作最多 100 条"</span></li>
+          </ul>
+        </div>
+        <div style="margin-top:1rem;">
+          <button class="modlink clr-purple" data-protoview="../asset/prototype/问题管理.png" data-protoname="5.7 问题管理">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>查看原型
+          </button>
+        </div>
+      </div>
+
+      <!-- 5.8 回答管理 -->
+      <div class="sv-pane clr-purple" id="mod-5-8">
+        <div class="modhead">
+          <div class="modhead-meta">
+            <span class="badge clr-purple" style="background:var(--c-bg);color:var(--c-strong);border-color:var(--c-border);">模块 5.8</span>
+            <span class="badge badge-danger">P0</span>
+            <span class="tag clr-purple">Vue 3 + AntD</span>
+            <span class="badge badge-neutral">平台层</span>
+          </div>
+          <h3 class="modhead-title">回答管理（管理后台）</h3>
+          <p class="modhead-desc">运营对回答进行审核、UOP 同步管理、批量操作。已采纳回答不可删除。</p>
+        </div>
+        <div class="modgrid cols-2">
+          <div class="modblock"><h4>📋 核心功能</h4><ul>
+            <li>回答列表（多维度筛选）</li>
+            <li>审核：通过 / 驳回（需输入原因）</li>
+            <li>UOP 同步状态管理（重试 SYNCING）</li>
+            <li>批量操作（通过 / 驳回 / 删除 / 推送 UOP）</li>
+            <li>赞/踩计数展示</li>
+          </ul></div>
+          <div class="modblock"><h4>🔗 关联实体 / API</h4><ul>
+            <li><code>Answer</code> · <code>AuditLog</code></li>
+            <li><code>GET /admin/answers</code></li>
+            <li><code>POST /admin/answers/{id}/audit</code></li>
+            <li><code>POST /admin/answers/{id}/resync</code></li>
+          </ul>
+          <h4 style="margin-top:1rem;">🔐 Permission Code</h4><ul>
+            <li><code>answer:audit:any</code></li>
+            <li><code>answer:delete:any</code></li>
+            <li><code>answer:resync:any</code></li>
+          </ul></div>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>📐 关键业务规则</h4>
+          <ul class="br-list br-list-wrap" data-collapse>
+            <li><span class="br-code">BR-5.8-01</span><span style="flex:1;">回答列表默认按回复时间倒序排列</span></li>
+            <li><span class="br-code">BR-5.8-02</span><span style="flex:1;">官方号回答审核通过后，自动同步回答数据到 UOP 系统</span></li>
+            <li><span class="br-code">BR-5.8-03</span><span style="flex:1;">UOP 同步失败的回答，管理员可手动重新触发同步（FAILED → SYNCING）</span></li>
+            <li><span class="br-code">BR-5.8-04</span><span style="flex:1;">已采纳的回答不允许删除（需先取消采纳）</span></li>
+            <li><span class="br-code">BR-5.8-05</span><span style="flex:1;">用户身份区分：普通用户、官方号 Engineer、官方号 Product Manager</span></li>
+            <li class="hidden"><span class="br-code">BR-5.8-06</span><span style="flex:1;">审核驳回时必须填写驳回原因</span></li>
+            <li class="hidden"><span class="br-code">BR-5.8-07</span><span style="flex:1;">所有管理操作记录操作日志</span></li>
+            <li class="hidden"><span class="br-code">BR-5.8-08</span><span style="flex:1;">批量操作一次最多选择 100 条</span></li>
+            <li class="hidden"><span class="br-code">BR-5.8-09</span><span style="flex:1;">删除操作需二次确认，不可撤销</span></li>
+            <li class="hidden"><span class="br-code">BR-5.8-10</span><span style="flex:1;">回复人手机号/邮箱脱敏显示</span></li>
+          </ul>
+          <button class="br-expand-btn" data-expand-btn>展开剩余 5 条 ↓</button>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>✅ 验收标准（AC）</h4>
+          <ul class="ac-list">
+            <li><span class="ac-code">AC-5.8-01</span><span style="flex:1;"><strong>Given</strong> 官方号工程师的回答待审核 <strong>When</strong> 管理员审核通过 <strong>Then</strong> 移动端可见，数据同步 UOP，状态显示"已同步"</span></li>
+            <li><span class="ac-code">AC-5.8-03</span><span style="flex:1;"><strong>Given</strong> 管理员筛选"同步失败" <strong>When</strong> 点击重新同步 <strong>Then</strong> 系统重试，成功后状态变为"已同步"</span></li>
+            <li><span class="ac-code">AC-5.8-04</span><span style="flex:1;"><strong>Given</strong> 某回答已被采纳 <strong>When</strong> 管理员尝试删除 <strong>Then</strong> 提示"已采纳的回答不可删除"</span></li>
+            <li><span class="ac-code">AC-5.8-06</span><span style="flex:1;"><strong>Given</strong> 普通用户回复了问题 <strong>When</strong> 管理员审核通过 <strong>Then</strong> 前端可见，但不触发 UOP 同步</span></li>
+          </ul>
+        </div>
+        <div style="margin-top:1rem;">
+          <button class="modlink clr-purple" data-protoview="../asset/prototype/回答管理.png" data-protoname="5.8 回答管理">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>查看原型
+          </button>
+        </div>
+      </div>
+
+      <!-- 5.9 用户管理 -->
+      <div class="sv-pane clr-purple" id="mod-5-9">
+        <div class="modhead">
+          <div class="modhead-meta">
+            <span class="badge clr-purple" style="background:var(--c-bg);color:var(--c-strong);border-color:var(--c-border);">模块 5.9</span>
+            <span class="badge badge-danger">P0</span>
+            <span class="tag clr-purple">Vue 3 + AntD</span>
+            <span class="badge badge-neutral">平台层</span>
+          </div>
+          <h3 class="modhead-title">用户管理（管理后台）</h3>
+          <p class="modhead-desc">用户列表查看、官方号创建/编辑（设置品牌标签和职位）、隐私数据脱敏显示。</p>
+        </div>
+        <div class="modgrid cols-2">
+          <div class="modblock"><h4>📋 核心功能</h4><ul>
+            <li>用户列表（已有，新增"官方号名称"列与筛选）</li>
+            <li>设为官方号（弹窗选择官方号名称字典）</li>
+            <li>官方号状态：ACTIVE / INACTIVE</li>
+            <li>UOP 同步官方号到 App，自动创建账号</li>
+            <li>手机号 / 邮箱脱敏</li>
+          </ul></div>
+          <div class="modblock"><h4>🔗 关联实体 / API</h4><ul>
+            <li><code>User</code>（既有，扩展 official_account_name）</li>
+            <li><code>GET /admin/users</code></li>
+            <li><code>POST /admin/users/{id}/official</code></li>
+          </ul>
+          <h4 style="margin-top:1rem;">🔐 Permission Code</h4><ul>
+            <li>复用既有用户管理权限</li>
+          </ul></div>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>📐 关键业务规则</h4>
+          <ul class="br-list br-list-wrap" data-collapse>
+            <li><span class="br-code">BR-5.9-01</span><span style="flex:1;">用户列表默认按注册时间倒序排列</span></li>
+            <li><span class="br-code">BR-5.9-02</span><span style="flex:1;">官方号名称读取字典 <code>OfficialAccountName</code>，管理员不可随意输入</span></li>
+            <li><span class="br-code">BR-5.9-03</span><span style="flex:1;">设为官方号时必须选择官方号名称，不可为空</span></li>
+            <li><span class="br-code">BR-5.9-04</span><span style="flex:1;">取消官方号需二次确认，操作不可撤销（但可重新设为官方号）</span></li>
+            <li><span class="br-code">BR-5.9-05</span><span style="flex:1;">UOP 同步创建的官方号用户，自动关联对应官方号名称</span></li>
+            <li class="hidden"><span class="br-code">BR-5.9-06</span><span style="flex:1;">用户身份变更后，历史内容（问题/回答）中的官方号标识同步更新</span></li>
+            <li class="hidden"><span class="br-code">BR-5.9-07</span><span style="flex:1;">所有管理操作记录操作日志</span></li>
+            <li class="hidden"><span class="br-code">BR-5.9-08</span><span style="flex:1;">手机号/邮箱脱敏显示，仅保留前三位和后四位，中间用 * 替代</span></li>
+          </ul>
+          <button class="br-expand-btn" data-expand-btn>展开剩余 3 条 ↓</button>
+        </div>
+        <div class="modblock" style="margin-top:1rem;">
+          <h4>✅ 验收标准（AC）</h4>
+          <ul class="ac-list">
+            <li><span class="ac-code">AC-5.9-01</span><span style="flex:1;"><strong>Given</strong> 管理员查看用户列表 <strong>When</strong> 筛选官方号名称 <strong>Then</strong> 列表正确显示匹配的用户</span></li>
+            <li><span class="ac-code">AC-5.9-02</span><span style="flex:1;"><strong>Given</strong> 普通用户 <strong>When</strong> 管理员设为官方号并选择名称 <strong>Then</strong> 用户身份变为官方号，列表显示官方号名称</span></li>
+            <li><span class="ac-code">AC-5.9-04</span><span style="flex:1;"><strong>Given</strong> 字典 OfficialAccountName 为空 <strong>When</strong> 管理员点击设为官方号 <strong>Then</strong> 提示"请先配置官方号名称字典"</span></li>
+          </ul>
+        </div>
+        <div style="margin-top:1rem;">
+          <button class="modlink clr-purple" data-protoview="../asset/prototype/用户管理.png" data-protoname="5.9 用户管理">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>查看原型
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- §5 PROTOTYPES — 原型预览                                       -->
+<!-- ============================================================ -->
+<section id="prototypes">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow"><span class="section-eyebrow-dot"></span> §5 Prototype Preview</div>
+      <h2 class="section-title">原型预览</h2>
+      <p class="section-subtitle">点击图片查看大图。可按层级筛选。</p>
+    </div>
+  </div>
+  <div class="proto-filter" data-protofilter>
+    <button class="proto-filter-btn active" data-filter="all">全部 <span style="opacity:0.6;">10</span></button>
+    <button class="proto-filter-btn" data-filter="app">APP 端 <span style="opacity:0.6;">5</span></button>
+    <button class="proto-filter-btn" data-filter="h5">H5 <span style="opacity:0.6;">1</span></button>
+    <button class="proto-filter-btn" data-filter="admin">管理后台 <span style="opacity:0.6;">4</span></button>
+  </div>
+  <div class="proto-grid" data-protogrid>
+    <div class="proto-card" data-cat="app"><div class="proto-card-img"><img src="../asset/prototype/圈子首页.png" alt="圈子首页" data-zoomable data-cap="5.2 圈子首页" /></div><div class="proto-card-meta"><div class="proto-card-name">圈子首页</div><div class="proto-card-mod">模块 5.2 · Flutter</div></div></div>
+    <div class="proto-card" data-cat="app"><div class="proto-card-img"><img src="../asset/prototype/提问页.png" alt="问题发布" data-zoomable data-cap="5.3 问题发布" /></div><div class="proto-card-meta"><div class="proto-card-name">问题发布</div><div class="proto-card-mod">模块 5.3 · Flutter</div></div></div>
+    <div class="proto-card" data-cat="h5"><div class="proto-card-img"><img src="../asset/prototype/问题详情.png" alt="问题详情" data-zoomable data-cap="5.4 问题详情" /></div><div class="proto-card-meta"><div class="proto-card-name">问题详情</div><div class="proto-card-mod">模块 5.4 · H5 WebView</div></div></div>
+    <div class="proto-card" data-cat="app"><div class="proto-card-img"><img src="../asset/prototype/搜索页.png" alt="搜索页" data-zoomable data-cap="5.5 搜索" /></div><div class="proto-card-meta"><div class="proto-card-name">搜索</div><div class="proto-card-mod">模块 5.5 · Flutter</div></div></div>
+    <div class="proto-card" data-cat="app"><div class="proto-card-img"><img src="../asset/prototype/消息通知.png" alt="消息通知" data-zoomable data-cap="5.6 消息通知" /></div><div class="proto-card-meta"><div class="proto-card-name">消息通知</div><div class="proto-card-mod">模块 5.6 · Flutter</div></div></div>
+    <div class="proto-card" data-cat="app"><div class="proto-card-img"><img src="../asset/prototype/服务页-新增入口.png" alt="服务页入口" data-zoomable data-cap="服务页 · 新增入口" /></div><div class="proto-card-meta"><div class="proto-card-name">服务页入口</div><div class="proto-card-mod">入口集成</div></div></div>
+    <div class="proto-card" data-cat="admin"><div class="proto-card-img"><img src="../asset/prototype/圈子管理.png" alt="圈子管理" data-zoomable data-cap="5.1 圈子管理" /></div><div class="proto-card-meta"><div class="proto-card-name">圈子管理</div><div class="proto-card-mod">模块 5.1 · 后台</div></div></div>
+    <div class="proto-card" data-cat="admin"><div class="proto-card-img"><img src="../asset/prototype/问题管理.png" alt="问题管理" data-zoomable data-cap="5.7 问题管理" /></div><div class="proto-card-meta"><div class="proto-card-name">问题管理</div><div class="proto-card-mod">模块 5.7 · 后台</div></div></div>
+    <div class="proto-card" data-cat="admin"><div class="proto-card-img"><img src="../asset/prototype/回答管理.png" alt="回答管理" data-zoomable data-cap="5.8 回答管理" /></div><div class="proto-card-meta"><div class="proto-card-name">回答管理</div><div class="proto-card-mod">模块 5.8 · 后台</div></div></div>
+    <div class="proto-card" data-cat="admin"><div class="proto-card-img"><img src="../asset/prototype/用户管理.png" alt="用户管理" data-zoomable data-cap="5.9 用户管理" /></div><div class="proto-card-meta"><div class="proto-card-name">用户管理</div><div class="proto-card-mod">模块 5.9 · 后台</div></div></div>
+  </div>
+
+  <div class="proto-stats">
+    <div class="proto-stat clr-blue"><div class="proto-stat-value">5</div><div class="proto-stat-label">APP 端页面</div></div>
+    <div class="proto-stat clr-green"><div class="proto-stat-value">1</div><div class="proto-stat-label">H5 页面</div></div>
+    <div class="proto-stat clr-purple"><div class="proto-stat-value">4</div><div class="proto-stat-label">管理后台页面</div></div>
+    <div class="proto-stat clr-slate"><div class="proto-stat-value">10</div><div class="proto-stat-label">总计</div></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- §6 ROLES — 角色与权限（左侧 Tab）                                -->
+<!-- ============================================================ -->
+<section id="roles" class="section-alt">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow"><span class="section-eyebrow-dot"></span> §6 Roles &amp; Permissions</div>
+      <h2 class="section-title">角色与权限</h2>
+      <p class="section-subtitle">角色定义、权限矩阵、角色规则、Permission Code 注册表</p>
+    </div>
+  </div>
+  <div class="splitview">
+    <div class="splitview-list" data-sv="roles">
+      <div class="splitview-item clr-indigo active" data-svtarget="roles-def"><span class="sv-icon">👥</span><span class="sv-name">角色定义</span></div>
+      <div class="splitview-item clr-indigo" data-svtarget="roles-matrix"><span class="sv-icon">⊞</span><span class="sv-name">权限矩阵</span></div>
+      <div class="splitview-item clr-indigo" data-svtarget="roles-rules"><span class="sv-icon">📜</span><span class="sv-name">角色规则</span></div>
+      <div class="splitview-item clr-indigo" data-svtarget="roles-perm"><span class="sv-icon">🔐</span><span class="sv-name">Permission Code</span></div>
+    </div>
+    <div class="splitview-detail">
+      <div class="sv-pane clr-indigo active" id="roles-def">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon clr-indigo" style="background:var(--c-bg);color:var(--c-strong);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg></div>
+            <h3 class="card-title">7 种角色定义</h3>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th style="width:11rem;">角色常量</th><th style="width:14rem;">角色名</th><th>说明</th><th style="width:10rem;">端</th></tr></thead>
+              <tbody>
+                <tr><td><code>ALL</code></td><td><strong>全部用户（含游客）</strong></td><td style="color:var(--fg-muted);">未登录 + 已登录全集</td><td><span class="badge badge-info">App</span></td></tr>
+                <tr><td><code>AUTH</code></td><td><strong>已登录用户</strong></td><td style="color:var(--fg-muted);">任何已完成登录的用户</td><td><span class="badge badge-info">App</span></td></tr>
+                <tr><td><code>OWNER</code></td><td><strong>车主用户</strong></td><td style="color:var(--fg-muted);">已绑定车辆并通过认证的车主</td><td><span class="badge badge-info">App</span></td></tr>
+                <tr><td><code>AUTH_OWNER</code></td><td><strong>授权车主</strong></td><td style="color:var(--fg-muted);">经车主授权使用车辆，权限与 OWNER 等价</td><td><span class="badge badge-info">App</span></td></tr>
+                <tr><td><code>OFFICIAL</code></td><td><strong>官方号</strong></td><td style="color:var(--fg-muted);">OFFICIAL_ENGINEER + OFFICIAL_PM 权限等价</td><td><span class="badge badge-info">App+后台</span></td></tr>
+                <tr><td><code>ADMIN</code></td><td><strong>管理员</strong></td><td style="color:var(--fg-muted);">运营人员，仅在管理后台生效</td><td><span class="badge badge-warning">仅后台</span></td></tr>
+                <tr><td><code>AUTHOR</code></td><td><strong>作者（运行时）</strong></td><td style="color:var(--fg-muted);">资源创建者，Service 层动态判定</td><td><span class="badge badge-neutral">运行时</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="sv-pane clr-indigo" id="roles-matrix">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon clr-indigo" style="background:var(--c-bg);color:var(--c-strong);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg></div>
+            <h3 class="card-title">权限矩阵（默认配置，可被圈子配置覆盖）</h3>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th style="width:14rem;">操作</th><th>游客</th><th>注册用户</th><th>车主</th><th>授权车主</th><th>官方号</th><th>作者</th></tr></thead>
+              <tbody>
+                <tr><td><strong>访问圈子 / 问题详情</strong></td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;color:var(--fg-soft);">—</td></tr>
+                <tr><td><strong>发布问题</strong></td><td style="text-align:center;color:var(--fg-soft);">✗</td><td style="text-align:center;color:var(--fg-soft);">✗</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;color:var(--fg-soft);">—</td></tr>
+                <tr><td><strong>回答问题（顶层）</strong></td><td style="text-align:center;color:var(--fg-soft);">✗</td><td style="text-align:center;color:var(--fg-soft);">✗</td><td style="text-align:center;color:var(--fg-soft);">✗</td><td style="text-align:center;color:var(--fg-soft);">✗</td><td style="text-align:center;">✓</td><td style="text-align:center;color:var(--fg-soft);">—</td></tr>
+                <tr><td><strong>追问（嵌套回复）</strong></td><td style="text-align:center;color:var(--fg-soft);">✗</td><td style="text-align:center;color:var(--fg-soft);">✗</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td></tr>
+                <tr><td><strong>采纳回答</strong></td><td style="text-align:center;color:var(--fg-soft);">—</td><td style="text-align:center;color:var(--fg-soft);">—</td><td style="text-align:center;color:var(--fg-soft);">—</td><td style="text-align:center;color:var(--fg-soft);">—</td><td style="text-align:center;color:var(--fg-soft);">—</td><td style="text-align:center;">✓</td></tr>
+                <tr><td><strong>删除自己内容</strong></td><td style="text-align:center;color:var(--fg-soft);">—</td><td style="text-align:center;color:var(--fg-soft);">—</td><td style="text-align:center;color:var(--fg-soft);">—</td><td style="text-align:center;color:var(--fg-soft);">—</td><td style="text-align:center;color:var(--fg-soft);">—</td><td style="text-align:center;">✓</td></tr>
+                <tr><td><strong>投票（赞/踩）</strong></td><td style="text-align:center;color:var(--fg-soft);">✗</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td></tr>
+                <tr><td><strong>翻译内容</strong></td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;color:var(--fg-soft);">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="color:var(--fg-muted);font-size:0.85rem;margin-top:0.75rem;">
+            ✓ 拥有 / ✗ 无 / — 不适用。GR-PERM-01：圈子配置权限 &gt; 角色默认权限。
+          </p>
+        </div>
+      </div>
+      <div class="sv-pane clr-indigo" id="roles-rules">
+        <div class="card">
+          <ul class="checklist">
+            <li><span class="check-icon info">01</span><span><strong>RR-01</strong> · 圈子配置中的"访问/发表/回复/追问"权限可覆盖默认权限矩阵</span></li>
+            <li><span class="check-icon info">02</span><span><strong>RR-02</strong> · 官方号的品牌标签（如 GAC）和职位（Engineer / PM）由管理员在后台设置</span></li>
+            <li><span class="check-icon info">03</span><span><strong>RR-03</strong> · 同一用户在不同圈子可有不同权限（由圈子配置决定）</span></li>
+            <li><span class="check-icon info">04</span><span><strong>RR-04</strong> · 官方号子类型 OFFICIAL_ENGINEER 与 OFFICIAL_PM 权限等价，区分仅用于 UI 职位展示</span></li>
+            <li><span class="check-icon info">05</span><span><strong>RR-05</strong> · 用户可同时持有多个角色，匹配圈子配置的任一角色即视为有权限</span></li>
+            <li><span class="check-icon info">06</span><span><strong>RR-06</strong> · 在线工程师圈子中，车主用户与授权车主默认权限一致</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="sv-pane clr-indigo" id="roles-perm">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon clr-indigo" style="background:var(--c-bg);color:var(--c-strong);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2zM7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div>
+              <div class="card-title">Permission Code 注册表（共 19 个）</div>
+              <div style="font-size:0.85rem;color:var(--fg-muted);margin-top:0.125rem;">命名格式 <code>{资源}:{动作}:{范围}</code></div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th style="width:16rem;">Permission Code</th><th>含义</th><th style="width:18rem;">默认角色</th></tr></thead>
+              <tbody>
+                <tr><td><code>group:view:any</code></td><td>查看圈子列表/详情</td><td style="color:var(--fg-muted);font-size:0.85rem;">ALL</td></tr>
+                <tr><td><code>group:manage:any</code></td><td>创建/编辑/删除/启用停用</td><td style="color:var(--fg-muted);font-size:0.85rem;">ADMIN</td></tr>
+                <tr><td><code>question:view:any</code></td><td>查看审核通过的问题</td><td style="color:var(--fg-muted);font-size:0.85rem;">ALL</td></tr>
+                <tr><td><code>question:view:own</code></td><td>查看自己未通过审核的问题</td><td style="color:var(--fg-muted);font-size:0.85rem;">作者</td></tr>
+                <tr><td><code>question:create:any</code></td><td>发布问题</td><td style="color:var(--fg-muted);font-size:0.85rem;">OWNER+AUTH_OWNER+OFFICIAL</td></tr>
+                <tr><td><code>question:delete:own</code></td><td>删除自己的问题</td><td style="color:var(--fg-muted);font-size:0.85rem;">作者</td></tr>
+                <tr><td><code>question:delete:any</code></td><td>删除任意问题</td><td style="color:var(--fg-muted);font-size:0.85rem;">ADMIN</td></tr>
+                <tr><td><code>question:audit:any</code></td><td>审核问题</td><td style="color:var(--fg-muted);font-size:0.85rem;">ADMIN</td></tr>
+                <tr><td><code>answer:create:any</code></td><td>回答问题（顶层）</td><td style="color:var(--fg-muted);font-size:0.85rem;">OFFICIAL+ADMIN</td></tr>
+                <tr><td><code>answer:reply:any</code></td><td>回复（嵌套仅一层）</td><td style="color:var(--fg-muted);font-size:0.85rem;">OWNER+AUTH_OWNER+OFFICIAL</td></tr>
+                <tr><td><code>answer:delete:own</code></td><td>删除自己的回答</td><td style="color:var(--fg-muted);font-size:0.85rem;">作者</td></tr>
+                <tr><td><code>answer:delete:any</code></td><td>删除任意回答</td><td style="color:var(--fg-muted);font-size:0.85rem;">ADMIN</td></tr>
+                <tr><td><code>answer:audit:any</code></td><td>审核回答</td><td style="color:var(--fg-muted);font-size:0.85rem;">ADMIN</td></tr>
+                <tr><td><code>answer:accept:own</code></td><td>采纳回答（仅 1 条）</td><td style="color:var(--fg-muted);font-size:0.85rem;">问题作者</td></tr>
+                <tr><td><code>answer:resync:any</code></td><td>UOP 同步失败重试</td><td style="color:var(--fg-muted);font-size:0.85rem;">ADMIN</td></tr>
+                <tr><td><code>vote:cast:any</code></td><td>投票（赞/踩）</td><td style="color:var(--fg-muted);font-size:0.85rem;">AUTH</td></tr>
+                <tr><td><code>notification:read:own</code></td><td>读取通知</td><td style="color:var(--fg-muted);font-size:0.85rem;">本人</td></tr>
+                <tr><td><code>notification:clear:own</code></td><td>标记已读</td><td style="color:var(--fg-muted);font-size:0.85rem;">本人</td></tr>
+                <tr><td><code>translate:invoke:any</code></td><td>调用翻译</td><td style="color:var(--fg-muted);font-size:0.85rem;">ALL</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- §7 RULES — 全局规范（左侧 Tab）                                  -->
+<!-- ============================================================ -->
+<section id="rules">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow"><span class="section-eyebrow-dot"></span> §7 Global Rules</div>
+      <h2 class="section-title">全局规范</h2>
+      <p class="section-subtitle">跨模块的全局规则、性能指标与非功能性需求</p>
+    </div>
+  </div>
+  <div class="splitview">
+    <div class="splitview-list" data-sv="rules">
+      <div class="splitview-item clr-rose active" data-svtarget="rules-auth"><span class="sv-icon">🔑</span><span class="sv-name">认证与权限</span></div>
+      <div class="splitview-item clr-rose" data-svtarget="rules-content"><span class="sv-icon">📝</span><span class="sv-name">内容规范</span></div>
+      <div class="splitview-item clr-rose" data-svtarget="rules-audit"><span class="sv-icon">🛡️</span><span class="sv-name">审核规则</span></div>
+      <div class="splitview-item clr-rose" data-svtarget="rules-page"><span class="sv-icon">📄</span><span class="sv-name">分页规则</span></div>
+      <div class="splitview-item clr-rose" data-svtarget="rules-search"><span class="sv-icon">🔍</span><span class="sv-name">搜索规则</span></div>
+      <div class="splitview-item clr-rose" data-svtarget="rules-notify"><span class="sv-icon">🔔</span><span class="sv-name">通知规则</span></div>
+      <div class="splitview-item clr-rose" data-svtarget="rules-lang"><span class="sv-icon">🌐</span><span class="sv-name">多语言</span></div>
+      <div class="splitview-item clr-rose" data-svtarget="rules-error"><span class="sv-icon">⚠️</span><span class="sv-name">错误处理</span></div>
+      <div class="splitview-item clr-rose" data-svtarget="rules-time"><span class="sv-icon">⏱️</span><span class="sv-name">时间格式</span></div>
+    </div>
+    <div class="splitview-detail">
+      <div class="sv-pane clr-rose active" id="rules-auth"><div class="card clr-rose"><ul class="checklist">
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-AUTH-01</strong> · 用户登录态由 GAC APP 统一管理，本模块不处理登录注册</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-AUTH-02</strong> · 访问需要登录的功能时跳转 App 统一登录页</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-PERM-01</strong> · 权限检查优先级：圈子配置权限 &gt; 角色默认权限</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-PERM-03</strong> · 官方号 V 标识、品牌标签、职位在所有展示场景中一致显示</span></li>
+      </ul></div></div>
+      <div class="sv-pane clr-rose" id="rules-content"><div class="card clr-rose"><ul class="checklist">
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-CONTENT-01</strong> · 所有用户输入需进行敏感词过滤和 XSS 防护</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-CONTENT-02</strong> · 图片：jpg/png/gif/webp，单张 ≤5MB；问题最多 9 张，回答最多 3 张</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-CONTENT-03</strong> · 视频：mp4，单个 ≤50MB，时长 ≤60s；问题最多 1 个，回答最多 1 个</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-CONTENT-04</strong> · 内容支持翻译（Google Translate API），缓存 7 天</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-CONTENT-05</strong> · 用户输入为<strong>纯文本 + 换行</strong>，HTML 标签全转义</span></li>
+      </ul></div></div>
+      <div class="sv-pane clr-rose" id="rules-audit"><div class="card clr-rose"><ul class="checklist">
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-AUDIT-01</strong> · 提交时先调 UOP 敏感词校验，不通过则拒绝</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-AUDIT-02</strong> · 审核由 UOP 平台 AI + 人工处理，App 端不参与流程</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-AUDIT-03</strong> · 审核结果由 UOP 平台回调：中、高风险人工审核；低风险自动通过</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-AUDIT-04</strong> · 问题发布成功后仅本人可见，审核通过后对其他用户可见</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-AUDIT-05</strong> · 管理员操作（审核、删除、热门）记录操作日志</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-AUDIT-06</strong> · 删除操作同步状态到 UOP，列表显示暗色"问题已删除"</span></li>
+      </ul></div></div>
+      <div class="sv-pane clr-rose" id="rules-page"><div class="card clr-rose"><ul class="checklist">
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-PAGE-01</strong> · 移动端 cursor 分页（避免数据漂移），每次 20 条</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-PAGE-02</strong> · 后台传统页码分页（page/pageSize），默认每页 20 条</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-PAGE-03</strong> · 列表为空时显示空状态引导</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-PAGE-04</strong> · 移动端 API 同时支持 cursor 与 page（互斥，cursor 优先）</span></li>
+      </ul></div></div>
+      <div class="sv-pane clr-rose" id="rules-search"><div class="card clr-rose"><ul class="checklist">
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-SEARCH-01</strong> · 搜索范围：问题标题 + 内容</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-SEARCH-02</strong> · 搜索关键词以红色高亮显示</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-SEARCH-03</strong> · 搜索结果按相关性排序，支持车型关键词匹配</span></li>
+      </ul></div></div>
+      <div class="sv-pane clr-rose" id="rules-notify"><div class="card clr-rose"><ul class="checklist">
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-NOTIFY-01</strong> · 工程师回复通知实时推送（App push + 站内通知）</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-NOTIFY-02</strong> · 未读通知显示红点标识</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-NOTIFY-03</strong> · 本模块通知统一归类为系统消息</span></li>
+      </ul></div></div>
+      <div class="sv-pane clr-rose" id="rules-lang"><div class="card clr-rose"><ul class="checklist">
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-LANG-01</strong> · 后台圈子名称和描述支持多语言配置（+ Lang 按钮）</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-LANG-02</strong> · 移动端 UI 语言跟随 App 系统语言设置</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-LANG-03</strong> · 用户生成内容通过翻译功能实现跨语言阅读</span></li>
+      </ul></div></div>
+      <div class="sv-pane clr-rose" id="rules-error"><div class="card clr-rose"><ul class="checklist">
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-ERROR-01</strong> · 网络异常统一提示"网络异常，请稍后重试"</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-ERROR-02</strong> · 服务端错误统一提示"系统繁忙，请稍后重试"</span></li>
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-ERROR-03</strong> · 内容不存在或已删除时显示友好提示页</span></li>
+      </ul></div></div>
+      <div class="sv-pane clr-rose" id="rules-time"><div class="card clr-rose"><ul class="checklist">
+        <li><span class="check-icon info" style="background:var(--c-bg);color:var(--c-strong);">·</span><span><strong>GR-TIME-01</strong> · 相对时间格式：&lt;1 分钟 "Just now" / &lt;60 分钟 "N m ago" / &lt;24 小时 "N h ago" / &lt;7 天 "N d ago" / ≥7 天 "YYYY-MM-DD HH:mm"</span></li>
+      </ul></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- §8 DESIGN — 方案设计（左侧 Tab）                                 -->
+<!-- ============================================================ -->
+<section id="design" class="section-alt">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow"><span class="section-eyebrow-dot"></span> §8 Solution Design</div>
+      <h2 class="section-title">方案设计</h2>
+      <p class="section-subtitle">技术架构、数据模型、部署拓扑、关键决策、错误码</p>
+    </div>
+  </div>
+  <div class="splitview">
+    <div class="splitview-list" data-sv="design">
+      <div class="splitview-item clr-teal active" data-svtarget="design-arch">
+        <span class="sv-icon">🏛️</span>
+        <span class="sv-name">技术架构</span>
+      </div>
+      <div class="splitview-item clr-teal" data-svtarget="design-data">
+        <span class="sv-icon">🗄️</span>
+        <span class="sv-name">数据模型</span>
+      </div>
+      <div class="splitview-item clr-teal" data-svtarget="design-deploy">
+        <span class="sv-icon">🚀</span>
+        <span class="sv-name">部署拓扑</span>
+      </div>
+      <div class="splitview-item clr-teal" data-svtarget="design-decisions">
+        <span class="sv-icon">⚖️</span>
+        <span class="sv-name">关键决策</span>
+      </div>
+      <div class="splitview-item clr-teal" data-svtarget="design-errors">
+        <span class="sv-icon">⚠️</span>
+        <span class="sv-name">错误码</span>
+      </div>
+    </div>
+    <div class="splitview-detail">
+      <!-- 技术架构 -->
+      <div class="sv-pane clr-teal active" id="design-arch">
+        <h3 style="font-size:1rem;font-weight:600;margin:0 0 0.75rem;">分层架构（5 层）</h3>
+        <div class="arch-layer-card clr-blue"><div class="arch-layer-tag">接入层</div><div class="arch-layer-content">Istio Ingress · WAF（SQL 注入/XSS 过滤）· HTTPS 全链路 · CDN（OSS 资源加速）</div></div>
+        <div class="arch-layer-card clr-green"><div class="arch-layer-tag">应用层</div><div class="arch-layer-content">Flutter 原生（5.2/5.3/5.5/5.6）· H5 Nuxt（5.4 问题详情）· 运营管理后台 Vue 3（5.1/5.7/5.8/5.9）</div></div>
+        <div class="arch-layer-card clr-purple"><div class="arch-layer-tag">服务层</div><div class="arch-layer-content"><strong>community-service ⭐ 新建</strong>（问题/回答/圈子/投票）+ 复用 user-service / message-service / file-service / audit-service / translate-service</div></div>
+        <div class="arch-layer-card clr-orange"><div class="arch-layer-tag">数据层</div><div class="arch-layer-content">MySQL 8.0 主从 · Redis 7 集群 · RabbitMQ（异步事件）· Elasticsearch 8（搜索索引）</div></div>
+        <div class="arch-layer-card clr-amber"><div class="arch-layer-tag">外部依赖</div><div class="arch-layer-content">UOP 统一运营平台（敏感词校验 + 内容审核）· FCM Push · Google Cloud Translation · OSS + CDN</div></div>
+
+        <h3 style="font-size:1rem;font-weight:600;margin:1.5rem 0 0.75rem;">核心技术栈</h3>
+        <div class="grid grid-3">
+          <div class="card clr-blue"><div class="card-header"><div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3 class="card-title">移动端</h3></div><div class="card-desc">Flutter 3.x + Dart 3.x · Riverpod · GoRouter · Retrofit + Dio</div></div>
+          <div class="card clr-green"><div class="card-header"><div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10A15.3 15.3 0 0 1 8 12a15.3 15.3 0 0 1 4-10z"/></svg></div><h3 class="card-title">H5 详情页</h3></div><div class="card-desc">Vue 3 + NuxtJS（SSR）· Vant UI · Pinia · TypeScript</div></div>
+          <div class="card clr-purple"><div class="card-header"><div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><h3 class="card-title">管理后台</h3></div><div class="card-desc">Vue 3 + Ant Design Vue · Pinia · v-permission</div></div>
+          <div class="card clr-orange"><div class="card-header"><div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 17l10 5 10-5M2 12l10 5 10-5M12 2L2 7l10 5 10-5-10-5z"/></svg></div><h3 class="card-title">后端服务</h3></div><div class="card-desc">Spring Boot 3 · Spring Cloud · Sa-Token · MyBatis Plus</div></div>
+          <div class="card clr-red"><div class="card-header"><div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg></div><h3 class="card-title">数据存储</h3></div><div class="card-desc">MySQL 8.0 · Redis 7 Cluster · Elasticsearch 8 · RabbitMQ</div></div>
+          <div class="card clr-teal"><div class="card-header"><div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><h3 class="card-title">基础设施</h3></div><div class="card-desc">Kubernetes · Istio · Prometheus + Grafana · ELK · SkyWalking</div></div>
+        </div>
+      </div>
+      <!-- 数据模型 -->
+      <div class="sv-pane clr-teal" id="design-data">
+        <h3 style="font-size:1rem;font-weight:600;margin:0 0 1rem;">核心实体（7 个）</h3>
+        <div class="grid grid-2">
+
+          <div class="entity-card clr-blue">
+            <div class="entity-card-head">
+              <div class="entity-name-block">
+                <strong class="entity-name">Group</strong>
+                <span class="entity-name-cn">（圈子）</span>
+              </div>
+              <div class="entity-rel">
+                <span class="entity-rel-tag">1:N → Question</span>
+                <span class="entity-rel-tag">1:N → GroupTranslation</span>
+              </div>
+            </div>
+            <div class="entity-card-meta">表名 <code>t_community_group</code></div>
+            <table class="entity-fields">
+              <tr><td class="ef-name">id</td><td class="ef-type">bigint PK</td><td class="ef-desc">自增主键</td></tr>
+              <tr><td class="ef-name">type</td><td class="ef-type">VARCHAR(20)</td><td class="ef-desc">圈子类型: ONLINE_ENGINEER / PRODUCT_COMMUNITY / MODEL_GROUP / OTHER</td></tr>
+              <tr><td class="ef-name">name</td><td class="ef-type">VARCHAR(100)</td><td class="ef-desc">圈子名称</td></tr>
+              <tr><td class="ef-name">description</td><td class="ef-type">TEXT</td><td class="ef-desc">圈子描述</td></tr>
+              <tr><td class="ef-name">background_color</td><td class="ef-type">VARCHAR(7)</td><td class="ef-desc">背景色 HEX</td></tr>
+              <tr><td class="ef-name">access_roles</td><td class="ef-type">JSON</td><td class="ef-desc">访问权限角色列表</td></tr>
+              <tr><td class="ef-name">post_roles</td><td class="ef-type">JSON</td><td class="ef-desc">发表权限角色列表</td></tr>
+              <tr><td class="ef-name">reply_roles</td><td class="ef-type">JSON</td><td class="ef-desc">回复权限角色列表</td></tr>
+              <tr><td class="ef-name">follow_up_roles</td><td class="ef-type">JSON</td><td class="ef-desc">追问权限角色列表</td></tr>
+              <tr><td class="ef-name">is_enabled</td><td class="ef-type">BOOLEAN</td><td class="ef-desc">是否启用</td></tr>
+              <tr><td class="ef-name">sort_order</td><td class="ef-type">INT</td><td class="ef-desc">排序，数字越小越靠前</td></tr>
+              <tr><td class="ef-name">created_at</td><td class="ef-type">DATETIME</td><td class="ef-desc">创建时间</td></tr>
+              <tr><td class="ef-name">updated_at</td><td class="ef-type">DATETIME</td><td class="ef-desc">更新时间</td></tr>
+              <tr><td class="ef-name">deleted_at</td><td class="ef-type">DATETIME</td><td class="ef-desc">软删除时间</td></tr>
+            </table>
+          </div>
+
+          <div class="entity-card clr-blue">
+            <div class="entity-card-head">
+              <div class="entity-name-block">
+                <strong class="entity-name">GroupTranslation</strong>
+                <span class="entity-name-cn">（圈子翻译）</span>
+              </div>
+              <div class="entity-rel"><span class="entity-rel-tag">N:1 → Group</span></div>
+            </div>
+            <div class="entity-card-meta">表名 <code>t_community_group_translation</code></div>
+            <table class="entity-fields">
+              <tr><td class="ef-name">id</td><td class="ef-type">bigint PK</td><td class="ef-desc">自增主键</td></tr>
+              <tr><td class="ef-name">group_id</td><td class="ef-type">bigint FK</td><td class="ef-desc">圈子 ID</td></tr>
+              <tr><td class="ef-name">locale</td><td class="ef-type">VARCHAR(10)</td><td class="ef-desc">语言: zh-CN / en-US / th-TH</td></tr>
+              <tr><td class="ef-name">name</td><td class="ef-type">VARCHAR(100)</td><td class="ef-desc">翻译后名称</td></tr>
+              <tr><td class="ef-name">description</td><td class="ef-type">TEXT</td><td class="ef-desc">翻译后描述</td></tr>
+              <tr><td class="ef-name" colspan="3" style="color:var(--fg-muted);font-size:0.78rem;padding-top:0.5rem;">UNIQUE KEY (group_id, locale)</td></tr>
+            </table>
+          </div>
+
+          <div class="entity-card clr-orange">
+            <div class="entity-card-head">
+              <div class="entity-name-block">
+                <strong class="entity-name">Question</strong>
+                <span class="entity-name-cn">（问题）</span>
+              </div>
+              <div class="entity-rel">
+                <span class="entity-rel-tag">N:1 → Group</span>
+                <span class="entity-rel-tag">N:1 → User</span>
+                <span class="entity-rel-tag">1:N → Answer</span>
+              </div>
+            </div>
+            <div class="entity-card-meta">表名 <code>t_community_question</code></div>
+            <table class="entity-fields">
+              <tr><td class="ef-name">id</td><td class="ef-type">bigint PK</td><td class="ef-desc">自增主键</td></tr>
+              <tr><td class="ef-name">group_id</td><td class="ef-type">bigint FK</td><td class="ef-desc">所属圈子 ID</td></tr>
+              <tr><td class="ef-name">author_id</td><td class="ef-type">bigint FK</td><td class="ef-desc">作者用户 ID</td></tr>
+              <tr><td class="ef-name">title</td><td class="ef-type">VARCHAR(400)</td><td class="ef-desc">问题标题（v2.3.0: 200→400）</td></tr>
+              <tr><td class="ef-name">content</td><td class="ef-type">TEXT</td><td class="ef-desc">问题内容（纯文本+换行，v2.3.0）</td></tr>
+              <tr><td class="ef-name">images</td><td class="ef-type">JSON</td><td class="ef-desc">图片 URL 数组</td></tr>
+              <tr><td class="ef-name">vehicle_model</td><td class="ef-type">VARCHAR(100)</td><td class="ef-desc">关联车型</td></tr>
+              <tr><td class="ef-name">mileage</td><td class="ef-type">INT</td><td class="ef-desc">累计里程（km）</td></tr>
+              <tr><td class="ef-name">review_status</td><td class="ef-type">VARCHAR(20)</td><td class="ef-desc">PENDING / APPROVED / REJECTED</td></tr>
+              <tr><td class="ef-name">public_status</td><td class="ef-type">VARCHAR(20)</td><td class="ef-desc">PUBLIC / PRIVATE</td></tr>
+              <tr><td class="ef-name">is_hot</td><td class="ef-type">BOOLEAN</td><td class="ef-desc">是否热门</td></tr>
+              <tr><td class="ef-name">is_hidden</td><td class="ef-type">BOOLEAN</td><td class="ef-desc">是否隐藏</td></tr>
+              <tr><td class="ef-name">answer_count</td><td class="ef-type">INT</td><td class="ef-desc">回答数</td></tr>
+              <tr><td class="ef-name">view_count</td><td class="ef-type">INT</td><td class="ef-desc">浏览数</td></tr>
+              <tr><td class="ef-name">created_at</td><td class="ef-type">DATETIME</td><td class="ef-desc">创建时间</td></tr>
+              <tr><td class="ef-name">updated_at</td><td class="ef-type">DATETIME</td><td class="ef-desc">更新时间</td></tr>
+              <tr><td class="ef-name">deleted_at</td><td class="ef-type">DATETIME</td><td class="ef-desc">软删除时间</td></tr>
+            </table>
+          </div>
+
+          <div class="entity-card clr-orange">
+            <div class="entity-card-head">
+              <div class="entity-name-block">
+                <strong class="entity-name">Answer</strong>
+                <span class="entity-name-cn">（回答/回复）</span>
+              </div>
+              <div class="entity-rel">
+                <span class="entity-rel-tag">N:1 → Question</span>
+                <span class="entity-rel-tag">N:1 → User</span>
+                <span class="entity-rel-tag">1:N → Vote</span>
+                <span class="entity-rel-tag">1:N → Answer (自关联)</span>
+              </div>
+            </div>
+            <div class="entity-card-meta">表名 <code>t_community_answer</code></div>
+            <table class="entity-fields">
+              <tr><td class="ef-name">id</td><td class="ef-type">bigint PK</td><td class="ef-desc">自增主键</td></tr>
+              <tr><td class="ef-name">question_id</td><td class="ef-type">bigint FK</td><td class="ef-desc">所属问题 ID</td></tr>
+              <tr><td class="ef-name">author_id</td><td class="ef-type">bigint FK</td><td class="ef-desc">作者用户 ID</td></tr>
+              <tr><td class="ef-name">parent_id</td><td class="ef-type">bigint FK</td><td class="ef-desc">父回答 ID（自关联，嵌套回复）</td></tr>
+              <tr><td class="ef-name">content</td><td class="ef-type">TEXT</td><td class="ef-desc">回答内容</td></tr>
+              <tr><td class="ef-name">images</td><td class="ef-type">JSON</td><td class="ef-desc">图片 URL 数组</td></tr>
+              <tr><td class="ef-name">author_type</td><td class="ef-type">VARCHAR(20)</td><td class="ef-desc">作者类型: USER / OFFICIAL</td></tr>
+              <tr><td class="ef-name">review_status</td><td class="ef-type">VARCHAR(20)</td><td class="ef-desc">PENDING / APPROVED / REJECTED</td></tr>
+              <tr><td class="ef-name">sync_to_uop_status</td><td class="ef-type">VARCHAR(20)</td><td class="ef-desc">NOT_SYNCED / SYNCING / SYNCED / FAILED</td></tr>
+              <tr><td class="ef-name">is_accepted</td><td class="ef-type">BOOLEAN</td><td class="ef-desc">是否被采纳</td></tr>
+              <tr><td class="ef-name">upvote_count</td><td class="ef-type">INT</td><td class="ef-desc">赞成票数</td></tr>
+              <tr><td class="ef-name">downvote_count</td><td class="ef-type">INT</td><td class="ef-desc">反对票数</td></tr>
+              <tr><td class="ef-name">created_at</td><td class="ef-type">DATETIME</td><td class="ef-desc">创建时间</td></tr>
+              <tr><td class="ef-name">updated_at</td><td class="ef-type">DATETIME</td><td class="ef-desc">更新时间</td></tr>
+              <tr><td class="ef-name">deleted_at</td><td class="ef-type">DATETIME</td><td class="ef-desc">软删除时间</td></tr>
+            </table>
+          </div>
+
+          <div class="entity-card clr-red">
+            <div class="entity-card-head">
+              <div class="entity-name-block">
+                <strong class="entity-name">Vote</strong>
+                <span class="entity-name-cn">（投票）</span>
+              </div>
+              <div class="entity-rel"><span class="entity-rel-tag">N:1 → Answer</span><span class="entity-rel-tag">N:1 → User</span></div>
+            </div>
+            <div class="entity-card-meta">表名 <code>t_community_vote</code></div>
+            <table class="entity-fields">
+              <tr><td class="ef-name">id</td><td class="ef-type">bigint PK</td><td class="ef-desc">自增主键</td></tr>
+              <tr><td class="ef-name">user_id</td><td class="ef-type">bigint FK</td><td class="ef-desc">投票用户 ID</td></tr>
+              <tr><td class="ef-name">answer_id</td><td class="ef-type">bigint FK</td><td class="ef-desc">目标回答 ID</td></tr>
+              <tr><td class="ef-name">vote_type</td><td class="ef-type">VARCHAR(10)</td><td class="ef-desc">UP / DOWN（赞/踩互斥）</td></tr>
+              <tr><td class="ef-name">created_at</td><td class="ef-type">DATETIME</td><td class="ef-desc">创建时间</td></tr>
+              <tr><td class="ef-name" colspan="3" style="color:var(--fg-muted);font-size:0.78rem;padding-top:0.5rem;">UNIQUE KEY (user_id, answer_id) — 同用户同回答唯一</td></tr>
+            </table>
+          </div>
+
+          <div class="entity-card clr-purple">
+            <div class="entity-card-head">
+              <div class="entity-name-block">
+                <strong class="entity-name">Notification</strong>
+                <span class="entity-name-cn">（消息通知）</span>
+              </div>
+              <div class="entity-rel"><span class="entity-rel-tag">N:1 → User</span></div>
+            </div>
+            <div class="entity-card-meta">表名 <code>t_community_notification</code></div>
+            <table class="entity-fields">
+              <tr><td class="ef-name">id</td><td class="ef-type">bigint PK</td><td class="ef-desc">自增主键</td></tr>
+              <tr><td class="ef-name">user_id</td><td class="ef-type">bigint FK</td><td class="ef-desc">接收用户 ID</td></tr>
+              <tr><td class="ef-name">type</td><td class="ef-type">VARCHAR(50)</td><td class="ef-desc">SYSTEM_MESSAGE</td></tr>
+              <tr><td class="ef-name">title</td><td class="ef-type">VARCHAR(200)</td><td class="ef-desc">通知标题</td></tr>
+              <tr><td class="ef-name">content</td><td class="ef-type">VARCHAR(500)</td><td class="ef-desc">通知内容</td></tr>
+              <tr><td class="ef-name">target_id</td><td class="ef-type">bigint</td><td class="ef-desc">关联目标 ID（如 question_id）</td></tr>
+              <tr><td class="ef-name">target_type</td><td class="ef-type">VARCHAR(50)</td><td class="ef-desc">关联目标类型: question / answer</td></tr>
+              <tr><td class="ef-name">is_read</td><td class="ef-type">BOOLEAN</td><td class="ef-desc">是否已读</td></tr>
+              <tr><td class="ef-name">created_at</td><td class="ef-type">DATETIME</td><td class="ef-desc">创建时间</td></tr>
+            </table>
+          </div>
+
+          <div class="entity-card clr-slate">
+            <div class="entity-card-head">
+              <div class="entity-name-block">
+                <strong class="entity-name">AuditLog</strong>
+                <span class="entity-name-cn">（操作审计）</span>
+              </div>
+              <div class="entity-rel"><span class="entity-rel-tag">多态 → Question/Answer/Group</span></div>
+            </div>
+            <div class="entity-card-meta">表名 <code>t_community_audit_log</code></div>
+            <table class="entity-fields">
+              <tr><td class="ef-name">id</td><td class="ef-type">bigint PK</td><td class="ef-desc">自增主键</td></tr>
+              <tr><td class="ef-name">operator_id</td><td class="ef-type">bigint FK</td><td class="ef-desc">操作人 ID</td></tr>
+              <tr><td class="ef-name">action_type</td><td class="ef-type">VARCHAR(50)</td><td class="ef-desc">操作类型: APPROVE / REJECT / DELETE / SET_HOT 等</td></tr>
+              <tr><td class="ef-name">target_type</td><td class="ef-type">VARCHAR(50)</td><td class="ef-desc">QUESTION / ANSWER / GROUP</td></tr>
+              <tr><td class="ef-name">target_id</td><td class="ef-type">bigint</td><td class="ef-desc">目标 ID</td></tr>
+              <tr><td class="ef-name">before_value</td><td class="ef-type">JSON</td><td class="ef-desc">变更前数据</td></tr>
+              <tr><td class="ef-name">after_value</td><td class="ef-type">JSON</td><td class="ef-desc">变更后数据</td></tr>
+              <tr><td class="ef-name">remark</td><td class="ef-type">VARCHAR(500)</td><td class="ef-desc">备注（如驳回原因）</td></tr>
+              <tr><td class="ef-name">created_at</td><td class="ef-type">DATETIME</td><td class="ef-desc">操作时间</td></tr>
+            </table>
+          </div>
+
+        </div>
+
+        <h3 style="font-size:1rem;font-weight:600;margin:1.5rem 0 0.875rem;">核心状态机</h3>
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon clr-purple" style="background:var(--c-bg);color:var(--c-strong);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+              <h3 class="card-title"><code>Question.review_status</code></h3>
+            </div>
+            <div class="mermaid-wrap" style="padding:1rem;"><pre class="mermaid">
+stateDiagram-v2
+    [*] --> PENDING : create
+    PENDING --> APPROVED : approve
+    PENDING --> REJECTED : reject
+    APPROVED --> HIDDEN : hide
+    HIDDEN --> APPROVED : restore
+    APPROVED --> DELETED : delete
+            </pre></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon clr-orange" style="background:var(--c-bg);color:var(--c-strong);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+              <h3 class="card-title"><code>Answer.sync_to_uop_status</code></h3>
+            </div>
+            <div class="mermaid-wrap" style="padding:1rem;"><pre class="mermaid">
+stateDiagram-v2
+    [*] --> NOT_SYNCED
+    NOT_SYNCED --> SYNCING : push
+    SYNCING --> SYNCED : ok
+    SYNCING --> FAILED : error
+    FAILED --> SYNCING : resync
+            </pre></div>
+          </div>
+        </div>
+      </div>
+      <!-- 部署拓扑 -->
+      <div class="sv-pane clr-teal" id="design-deploy">
+        <div class="mermaid-wrap" style="margin-bottom:1.25rem;"><pre class="mermaid">
+graph TD
+    Mobile[移动端用户] --> Ingress[Istio Ingress]
+    Admin[运营管理员] --> Ingress
+    Ingress --> H5[H5 Nuxt x2]
+    Ingress --> CMS[管理后台 x2]
+    Ingress --> GW[Gateway x3]
+    GW --> CS[community-service x3 ⭐新建]
+    GW --> US[user-service x2]
+    GW --> MS[message-service x2]
+    GW --> FS[file-service x2]
+    GW --> AS[audit-service x2]
+    GW --> TS[translate-service x1]
+    CS --> MySQL[(MySQL 主从)]
+    CS --> Redis[(Redis 集群)]
+    CS --> MQ[(RabbitMQ)]
+    CS --> ES[(Elasticsearch)]
+    CS --> OSS[(OSS + CDN)]
+        </pre></div>
+        <h3 style="font-size:1rem;font-weight:600;margin:1.5rem 0 0.875rem;">容量规划</h3>
+        <div class="grid grid-3">
+          <div class="card clr-blue"><div style="font-size:0.78rem;color:var(--fg-muted);font-weight:500;">日活用户</div><div style="font-size:1.5rem;font-weight:700;margin-top:0.375rem;color:var(--fg);letter-spacing:-0.02em;">10 万</div></div>
+          <div class="card clr-blue"><div style="font-size:0.78rem;color:var(--fg-muted);font-weight:500;">日新增问题</div><div style="font-size:1.5rem;font-weight:700;margin-top:0.375rem;color:var(--fg);letter-spacing:-0.02em;">1,000</div></div>
+          <div class="card clr-blue"><div style="font-size:0.78rem;color:var(--fg-muted);font-weight:500;">峰值 QPS</div><div style="font-size:1.5rem;font-weight:700;margin-top:0.375rem;color:var(--fg);letter-spacing:-0.02em;">500</div></div>
+          <div class="card clr-green"><div style="font-size:0.78rem;color:var(--fg-muted);font-weight:500;">搜索响应时间</div><div style="font-size:1.5rem;font-weight:700;margin-top:0.375rem;color:var(--fg);letter-spacing:-0.02em;">&lt; 1s</div></div>
+          <div class="card clr-green"><div style="font-size:0.78rem;color:var(--fg-muted);font-weight:500;">community-service Pod</div><div style="font-size:1.5rem;font-weight:700;margin-top:0.375rem;color:var(--fg);letter-spacing:-0.02em;">3 (HPA 3-12)</div></div>
+          <div class="card clr-green"><div style="font-size:0.78rem;color:var(--fg-muted);font-weight:500;">存储预估</div><div style="font-size:1.5rem;font-weight:700;margin-top:0.375rem;color:var(--fg);letter-spacing:-0.02em;">500 GB/年</div></div>
+        </div>
+      </div>
+      <!-- 关键决策 -->
+      <div class="sv-pane clr-teal" id="design-decisions">
+        <div class="grid grid-2">
+          <div class="decision-card clr-blue"><div class="decision-head"><span class="decision-num">1</span><h3 class="decision-title">移动端架构</h3></div><p class="card-desc" style="margin-bottom:0.5rem;">复用 GAC APP 主壳保证体验一致；详情页用 H5 便于运营快速发布</p><div class="decision-choice">Flutter 原生 + H5 WebView (仅 5.4)</div><p class="decision-reason"><strong style="color:var(--fg);">原因：</strong>问题详情页富文本渲染复杂、嵌套回复交互多，H5 生态更成熟</p></div>
+          <div class="decision-card clr-purple"><div class="decision-head"><span class="decision-num">2</span><h3 class="decision-title">后台架构</h3></div><p class="card-desc" style="margin-bottom:0.5rem;">与 GAC 既有运营管理后台风格统一</p><div class="decision-choice">Vue 3 + Ant Design Vue</div><p class="decision-reason"><strong style="color:var(--fg);">原因：</strong>组件库丰富，适合中后台管理场景的快速开发</p></div>
+          <div class="decision-card clr-orange"><div class="decision-head"><span class="decision-num">3</span><h3 class="decision-title">微服务编排</h3></div><p class="card-desc" style="margin-bottom:0.5rem;">公司既有体系，仅新增一个业务微服务</p><div class="decision-choice">Spring Cloud + Nacos</div><p class="decision-reason"><strong style="color:var(--fg);">原因：</strong>新增 community-service 即可，复用现有服务，降低新组件运维成本</p></div>
+          <div class="decision-card clr-teal"><div class="decision-head"><span class="decision-num">4</span><h3 class="decision-title">分页策略</h3></div><p class="card-desc" style="margin-bottom:0.5rem;">移动端避免数据漂移，后台支持跳页定位</p><div class="decision-choice">移动端 cursor / 后台 page</div><p class="decision-reason"><strong style="color:var(--fg);">原因：</strong>移动端无限滚动场景下传统 page 分页会出现数据重复或遗漏</p></div>
+          <div class="decision-card clr-indigo"><div class="decision-head"><span class="decision-num">5</span><h3 class="decision-title">搜索引擎</h3></div><p class="card-desc" style="margin-bottom:0.5rem;">体验优先，故障兜底</p><div class="decision-choice">Elasticsearch + MySQL 降级</div><p class="decision-reason"><strong style="color:var(--fg);">原因：</strong>ES 提供全文检索体验（IK + ICU 双分词器，支持中文/泰文）；ES 不可用时降级到 MySQL LIKE 兜底</p></div>
+          <div class="decision-card clr-amber"><div class="decision-head"><span class="decision-num">6</span><h3 class="decision-title">推送通道</h3></div><p class="card-desc" style="margin-bottom:0.5rem;">跨平台，与既有 Push 通道一致</p><div class="decision-choice">Firebase Cloud Messaging (FCM)</div><p class="decision-reason"><strong style="color:var(--fg);">原因：</strong>泰国市场可用，与 GAC APP 既有 Push 通道一致；同时支持 iOS / Android</p></div>
+        </div>
+      </div>
+      <!-- 错误码 -->
+      <div class="sv-pane clr-teal" id="design-errors">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon clr-red" style="background:var(--c-bg);color:var(--c-strong);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div>
+            <div>
+              <div class="card-title">错误码注册表</div>
+              <div style="font-size:0.85rem;color:var(--fg-muted);margin-top:0.125rem;">约 40 个错误码，4 位数字按 6 个码段管理</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th style="width:7rem;">码段</th><th>类别</th><th style="width:7rem;">HTTP</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td><code>0</code></td><td><strong>成功</strong></td><td><span class="badge badge-success">200</span></td><td style="color:var(--fg-muted);">唯一成功码 <code>code: 0</code></td></tr>
+                <tr><td><code>1xxx</code></td><td><strong>通用 / 系统</strong></td><td><span class="badge badge-danger">5xx</span></td><td style="color:var(--fg-muted);">系统错误、服务不可用、超时、限流、重复请求</td></tr>
+                <tr><td><code>2xxx</code></td><td><strong>认证 / 授权</strong></td><td><span class="badge badge-info">401/403</span></td><td style="color:var(--fg-muted);">未登录、Token 过期、无权限、账号禁用</td></tr>
+                <tr><td><code>3xxx</code></td><td><strong>参数校验</strong></td><td><span class="badge badge-warning">400</span></td><td style="color:var(--fg-muted);">格式错误、缺失、超长、文件类型/大小不合规</td></tr>
+                <tr><td><code>4xxx</code></td><td><strong>业务逻辑</strong></td><td><span class="badge badge-warning">4xx</span></td><td style="color:var(--fg-muted);">资源不存在、重复操作、采纳上限、敏感词拒绝（4007）</td></tr>
+                <tr><td><code>5xxx</code></td><td><strong>外部依赖</strong></td><td><span class="badge badge-danger">502/429</span></td><td style="color:var(--fg-muted);">UOP / Translate / OSS / FCM 异常或限流</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- §9 AI GUIDE — AI 开发指南                                       -->
+<!-- ============================================================ -->
+<section id="ai-guide">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow"><span class="section-eyebrow-dot"></span> §9 AI Coding Guide</div>
+      <h2 class="section-title">AI 开发指南</h2>
+      <p class="section-subtitle">基于 Skill 的 Spec Coding 开发流程（Kiro Skills + Claude Code Skills）</p>
+    </div>
+  </div>
+
+  <!-- Spec Coding 简介 -->
+  <div class="grid grid-2" style="margin-bottom:1.5rem;">
+    <div class="card clr-indigo">
+      <div class="card-header">
+        <div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <h3 class="card-title">什么是 Spec Coding</h3>
+      </div>
+      <div class="card-desc">
+        <strong>以 Spec 文档为单一真相源（SSOT）的 AI 辅助开发模式</strong>。BR/EX/AC 编号体系形成"需求 → 测试 → 任务 → API"全链路追溯，AI 严格按文档生成代码并强制输出自检清单，确保实现可验证、可追溯。
+      </div>
+    </div>
+    <div class="card clr-purple">
+      <div class="card-header">
+        <div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></div>
+        <h3 class="card-title">人在回路（Human-in-the-Loop）</h3>
+      </div>
+      <div class="card-desc">
+        每个 Skill 遵循"先确认方案，再生成代码"原则。AI 输出实施方案表格供开发者确认，避免方向错误导致 Token 浪费与返工。
+      </div>
+    </div>
+  </div>
+
+  <!-- Skill 列表 -->
+  <h3 style="font-size:1.05rem;font-weight:600;margin:1.5rem 0 1rem;">📚 角色 Skill</h3>
+  <div class="grid grid-3">
+    <div class="skill-card clr-blue"><div class="skill-card-head"><div class="skill-card-icon">📱</div><div class="skill-card-name">flutter-dev</div></div><div class="skill-card-desc">Flutter 移动端开发：圈子首页/问题发布/搜索/消息通知</div><div class="skill-card-trigger">#flutter-dev 完成任务 QLIST-04</div></div>
+    <div class="skill-card clr-green"><div class="skill-card-head"><div class="skill-card-icon">🌐</div><div class="skill-card-name">h5-dev</div></div><div class="skill-card-desc">H5 详情页开发（Vue 3 + NuxtJS + Vant），仅模块 5.4</div><div class="skill-card-trigger">#h5-dev 完成任务 QDETAIL-05</div></div>
+    <div class="skill-card clr-purple"><div class="skill-card-head"><div class="skill-card-icon">💻</div><div class="skill-card-name">admin-dev</div></div><div class="skill-card-desc">运营管理后台开发，模块 5.1/5.7/5.8/5.9</div><div class="skill-card-trigger">#admin-dev 完成任务 GROUP-05</div></div>
+    <div class="skill-card clr-orange"><div class="skill-card-head"><div class="skill-card-icon">⚙️</div><div class="skill-card-name">backend-dev</div></div><div class="skill-card-desc">Java 后端开发（Spring Boot + Spring Cloud），全部 9 个模块</div><div class="skill-card-trigger">#backend-dev 完成任务 QPOST-02</div></div>
+    <div class="skill-card clr-red"><div class="skill-card-head"><div class="skill-card-icon">🗄️</div><div class="skill-card-name">db-design</div></div><div class="skill-card-desc">数据库设计（MySQL DDL + MyBatis Plus 实体）</div><div class="skill-card-trigger">#db-design 完成任务 GROUP-01</div></div>
+    <div class="skill-card clr-teal"><div class="skill-card-head"><div class="skill-card-icon">🧪</div><div class="skill-card-name">test-qa</div></div><div class="skill-card-desc">测试用例与自动化脚本（JUnit 5 / Playwright / Postman / k6）</div><div class="skill-card-trigger">#test-qa 完成任务 TEST-02</div></div>
+    <div class="skill-card clr-indigo"><div class="skill-card-head"><div class="skill-card-icon">📝</div><div class="skill-card-name">spec-writer</div></div><div class="skill-card-desc">Spec 文档编写：基于产品输入生成完整 PRD 文档集</div><div class="skill-card-trigger">#spec-writer 为圈子管理编写 spec</div></div>
+    <div class="skill-card clr-amber"><div class="skill-card-head"><div class="skill-card-icon">📊</div><div class="skill-card-name">spec-review</div></div><div class="skill-card-desc">评审 HTML 生成：把 spec 文档转成评审用单文件 HTML</div><div class="skill-card-trigger">#spec-review 生成本次评审 HTML</div></div>
+  </div>
+
+  <h3 style="font-size:1.05rem;font-weight:600;margin:1.75rem 0 1rem;">🔄 人在回路工作流（5 步）</h3>
+  <div>
+    <div class="step-card clr-blue"><div class="step-card-num">1</div><div class="step-card-content"><div class="step-card-title">解析任务编号</div><div class="step-card-desc">开发人员输入 <code>#flutter-dev 完成任务 QLIST-04</code> 等命令，AI 解析任务编号并反查模块</div></div></div>
+    <div class="step-card clr-purple"><div class="step-card-num">2</div><div class="step-card-content"><div class="step-card-title">输出实施方案表格</div><div class="step-card-desc">AI 读取 <code>spec-index.yaml</code> 和对应 PRD 核心章节，输出方案表格（任务编号/模块/输出文件/需加载文档/关键 BR 预览）</div></div></div>
+    <div class="step-card clr-green"><div class="step-card-num">3</div><div class="step-card-content"><div class="step-card-title">用户确认或调整</div><div class="step-card-desc">回复"确认"/OK 后进入代码生成；回复"先做 UI 部分"等更新方案后再次等待确认</div></div></div>
+    <div class="step-card clr-orange"><div class="step-card-num">4</div><div class="step-card-content"><div class="step-card-title">加载完整上下文</div><div class="step-card-desc">确认后 AI 按 Skill 内置的文档加载策略，自动读取完整的 PRD、设计文档、技术规范</div></div></div>
+    <div class="step-card clr-red"><div class="step-card-num">5</div><div class="step-card-content"><div class="step-card-title">生成代码 + 自检清单</div><div class="step-card-desc">AI 按 Skill 输出规范生成代码文件，末尾强制输出自检清单（BR/EX/AC 覆盖、Permission Code、错误码、未实现项）</div></div></div>
+  </div>
+
+  <!-- 触发方式 -->
+  <h3 style="font-size:1.05rem;font-weight:600;margin:1.75rem 0 1rem;">🎯 触发方式</h3>
+  <div class="grid grid-3">
+    <div class="card clr-blue">
+      <div class="card-header">
+        <div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11H7v6h2zm5 0h-2v6h2zm5 0h-2v6h2zM3 7h18v12H3z"/></svg></div>
+        <h3 class="card-title">方式 1 · 按任务编号（推荐）</h3>
+      </div>
+      <div class="skill-card-trigger" style="margin:0.75rem 0;">#flutter-dev 完成任务 QLIST-04</div>
+      <p style="font-size:0.825rem;color:var(--fg-muted);">最完整：自动反查模块、依赖、验收标准</p>
+    </div>
+    <div class="card clr-green">
+      <div class="card-header">
+        <div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg></div>
+        <h3 class="card-title">方式 2 · 按模块 ID</h3>
+      </div>
+      <div class="skill-card-trigger" style="margin:0.75rem 0;">#flutter-dev 为模块 5.2 生成首页</div>
+      <p style="font-size:0.825rem;color:var(--fg-muted);">需手动指定模块编号，加载对应 PRD</p>
+    </div>
+    <div class="card clr-orange">
+      <div class="card-header">
+        <div class="card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+        <h3 class="card-title">方式 3 · 自由描述</h3>
+      </div>
+      <div class="skill-card-trigger" style="margin:0.75rem 0;">#backend-dev 实现敏感词校验 Service</div>
+      <p style="font-size:0.825rem;color:var(--fg-muted);">最灵活，AI 智能识别意图</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- §10 AI SUMMARY — AI 评审摘要                                    -->
+<!-- ============================================================ -->
+<section id="aisummary" class="section-alt">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow"><span class="section-eyebrow-dot"></span> §10 Review Decision Panel</div>
+      <h2 class="section-title">评审决策面板</h2>
+      <p class="section-subtitle">基于 spec 文档的评审决策面板：已对齐项 / 待澄清风险 / 开放问题 / 决策时间表</p>
+    </div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#d1fae5;color:#047857;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5L20 7"/></svg></div>
+        <h3 class="card-title">已对齐项</h3>
+      </div>
+      <ul class="checklist">
+        <li><span class="check-icon success">✓</span><span>9 个功能模块边界清晰，前后端分工与依赖关系完整</span></li>
+        <li><span class="check-icon success">✓</span><span>7 种角色定义 + 19 个 Permission Code 形成完整权限矩阵</span></li>
+        <li><span class="check-icon success">✓</span><span>88 条 BR 全量映射追溯矩阵（BR → EX → AC → 任务 → API）</span></li>
+        <li><span class="check-icon success">✓</span><span>内容审核流程对接 UOP 平台，App 端职责明确（仅敏感词校验）</span></li>
+        <li><span class="check-icon success">✓</span><span>多语言方案（中/英/泰）覆盖 UI 文案与 UGC 翻译</span></li>
+        <li><span class="check-icon success">✓</span><span>技术栈与 GAC 既有体系一致（Flutter / Vue 3 / Spring Cloud）</span></li>
+        <li><span class="check-icon success">✓</span><span>性能指标（首页 ≤2s / 详情 ≤1.5s / 搜索 ≤1s）与 SLA 99.9% 已定义</span></li>
+        <li><span class="check-icon success">✓</span><span>OQ 9 个已关闭、1 个推迟 V2，仅 1 个待对齐</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#fef3c7;color:#b45309;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg></div>
+        <h3 class="card-title">待澄清风险</h3>
+      </div>
+      <ul class="checklist">
+        <li><span class="check-icon warning">!</span><span>UOP 接口 SLA、超时与降级策略待与 UOP 团队对齐（OQ-10，截止 2026-04-30）</span></li>
+        <li><span class="check-icon warning">!</span><span>WebView 与 Flutter 互通方案（路由/JWT/分享/返回）需联调验证</span></li>
+        <li><span class="check-icon warning">!</span><span>Google Translate API 调用频次预估与计费需评估，缓存命中率需压测</span></li>
+        <li><span class="check-icon warning">!</span><span>Elasticsearch 集群初次索引耗时与扩容阈值需压测验证</span></li>
+        <li><span class="check-icon warning">!</span><span>泰国市场 PDPA 合规要求（用户数据存储、跨境传输）需运营/法务确认</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:1.05rem;font-weight:600;margin:2rem 0 1rem;">❓ 开放问题（OQ）</h3>
+  <div class="oq-card">
+    <span class="oq-id">OQ-07</span>
+    <div class="oq-q">回答被采纳后是否引入积分/勋章等激励机制？</div>
+    <div class="oq-default"><strong>临时默认策略：</strong>本期不实现激励体系。前后端按"无积分、无勋章"处理，留待 V2 规划。</div>
+  </div>
+  <div class="oq-card">
+    <span class="oq-id">OQ-10</span>
+    <div class="oq-q">UOP 接口的 SLA 与降级策略？</div>
+    <div class="oq-default"><strong>临时默认策略：</strong>开发/单测阶段使用 mock 或 stub；联调前必须与 UOP 团队对齐 SLA、超时、重试与降级策略（截止日期 2026-04-30）。</div>
+  </div>
+
+  <h3 style="font-size:1.05rem;font-weight:600;margin:2rem 0 1rem;">📅 决策时间表</h3>
+  <div class="timetable">
+    <div class="timetable-row" style="background:var(--bg-soft);font-weight:600;font-size:0.78rem;color:var(--fg-muted);text-transform:uppercase;letter-spacing:0.05em;">
+      <div>截止日期</div>
+      <div>决策项</div>
+      <div>负责人</div>
+      <div>状态</div>
+    </div>
+    <div class="timetable-row">
+      <div class="timetable-date">2026-04-30</div>
+      <div class="timetable-task">OQ-10 · UOP 接口 SLA、超时、重试与降级策略对齐</div>
+      <div class="timetable-owner">Billy · UOP 团队</div>
+      <div><span class="badge badge-warning">待对齐</span></div>
+    </div>
+    <div class="timetable-row">
+      <div class="timetable-date">2026-05-15</div>
+      <div class="timetable-task">WebView 与 Flutter 互通方案（路由/JWT/分享/返回）联调</div>
+      <div class="timetable-owner">前端联调</div>
+      <div><span class="badge badge-info">进行中</span></div>
+    </div>
+    <div class="timetable-row">
+      <div class="timetable-date">2026-05-20</div>
+      <div class="timetable-task">Google Translate API 计费评估 + Elasticsearch 压测</div>
+      <div class="timetable-owner">后端 + 运维</div>
+      <div><span class="badge badge-info">待启动</span></div>
+    </div>
+    <div class="timetable-row">
+      <div class="timetable-date">V2 规划</div>
+      <div class="timetable-task">OQ-07 · 积分/勋章激励机制评估</div>
+      <div class="timetable-owner">产品</div>
+      <div><span class="badge badge-neutral">已推迟</span></div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="container">
+    <div class="footer-brand">Engineer Online（在线工程师）</div>
+    <div class="footer-meta">
+      文档版本 2.3.0 · 产品经理 Billy · 生成于 2026-05-15<br/><br/>
+      <a href="https://github.com/PM-Billy/engineer-online" target="_blank" rel="noopener">https://github.com/PM-Billy/engineer-online</a>
+    </div>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" aria-label="关闭">×</button>
+  <img id="lightbox-img" src="" alt="" />
+  <div class="lightbox-cap" id="lightbox-cap"></div>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: false, theme: 'base',
+    themeVariables: {
+      primaryColor: '#eff6ff', primaryTextColor: '#1e3a8a', primaryBorderColor: '#bfdbfe',
+      lineColor: '#94a3b8', secondaryColor: '#faf5ff', tertiaryColor: '#f8fafc',
+      fontFamily: 'ui-sans-serif, system-ui, sans-serif', fontSize: '14px'
+    }
+  });
+  // Render all mermaid diagrams even when their host pane is display:none
+  // by temporarily forcing all sv-pane / tab-pane / arch-pane visible during render.
+  (async () => {
+    const hiddenPanes = document.querySelectorAll('.sv-pane, .tab-pane, .arch-pane');
+    const prev = [];
+    hiddenPanes.forEach(p => { prev.push(p.style.display); p.style.display = 'block'; });
+    try {
+      await mermaid.run({ querySelector: '.mermaid' });
+    } catch (e) { console.warn('mermaid render error', e); }
+    hiddenPanes.forEach((p, i) => { p.style.display = prev[i] || ''; });
+  })();
+</script>
+<script>
+  // Active nav highlight
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('.nav-links a');
+  const navObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(s => navObs.observe(s));
+
+  // Top tabs (only used in §2 flows)
+  document.querySelectorAll('[data-tabs]').forEach(group => {
+    const buttons = group.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        const parent = group.closest('section');
+        parent.querySelectorAll('.tab-btn').forEach(b => {
+          if (b.parentElement === group) b.classList.toggle('active', b === btn);
+        });
+        parent.querySelectorAll(':scope > .tab-pane').forEach(p => p.classList.toggle('active', p.id === target));
+      });
+    });
+  });
+
+  // Side-tabs (splitview)
+  document.querySelectorAll('[data-sv]').forEach(list => {
+    const section = list.closest('section');
+    list.querySelectorAll('.splitview-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const target = item.dataset.svtarget;
+        list.querySelectorAll('.splitview-item').forEach(i => i.classList.toggle('active', i === item));
+        section.querySelectorAll('.sv-pane').forEach(p => p.classList.toggle('active', p.id === target));
+      });
+    });
+  });
+
+  // Architecture sub-switch
+  document.querySelectorAll('[data-archsub]').forEach(group => {
+    const buttons = group.querySelectorAll('.arch-sub-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.archtab;
+        group.parentElement.querySelectorAll('.arch-sub-btn').forEach(b => {
+          if (b.parentElement === group) b.classList.toggle('active', b === btn);
+        });
+        group.parentElement.querySelectorAll('.arch-pane').forEach(p => p.classList.toggle('active', p.id === target));
+      });
+    });
+  });
+
+  // Prototype filter
+  const protoGrid = document.querySelector('[data-protogrid]');
+  const protoFilter = document.querySelector('[data-protofilter]');
+  if (protoFilter && protoGrid) {
+    protoFilter.querySelectorAll('.proto-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        protoFilter.querySelectorAll('.proto-filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+        const cat = btn.dataset.filter;
+        protoGrid.querySelectorAll('.proto-card').forEach(card => {
+          card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+        });
+      });
+    });
+  }
+
+  // BR list collapse/expand
+  document.querySelectorAll('[data-expand-btn]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const list = btn.previousElementSibling;
+      if (!list || !list.classList.contains('br-list-wrap')) return;
+      const expanded = btn.dataset.expanded === 'true';
+      const items = list.querySelectorAll('li');
+      const initialHidden = parseInt(btn.dataset.hiddenCount || '0');
+      if (!expanded) {
+        // expand: remove hidden from items beyond first 5
+        items.forEach((li, idx) => {
+          if (idx >= 5) li.classList.remove('hidden');
+        });
+        btn.dataset.expanded = 'true';
+        btn.textContent = '收起 ↑';
+      } else {
+        // collapse
+        items.forEach((li, idx) => {
+          if (idx >= 5) li.classList.add('hidden');
+        });
+        btn.dataset.expanded = 'false';
+        btn.textContent = `展开剩余 ${initialHidden} 条 ↓`;
+      }
+    });
+    // Initialize hidden count from current state
+    const list = btn.previousElementSibling;
+    if (list && list.classList.contains('br-list-wrap')) {
+      const hiddenCount = list.querySelectorAll('li.hidden').length;
+      btn.dataset.hiddenCount = String(hiddenCount);
+    }
+  });
+
+  // Lightbox
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxCap = document.getElementById('lightbox-cap');
+  document.addEventListener('click', e => {
+    const img = e.target.closest('[data-zoomable]');
+    if (img) {
+      lightboxImg.src = img.src;
+      lightboxCap.textContent = img.dataset.cap || img.alt || '';
+      lightbox.classList.add('active');
+      return;
+    }
+    const btn = e.target.closest('[data-protoview]');
+    if (btn) {
+      lightboxImg.src = btn.dataset.protoview;
+      lightboxCap.textContent = btn.dataset.protoname || '';
+      lightbox.classList.add('active');
+      return;
+    }
+  });
+  function closeLightbox() { lightbox.classList.remove('active'); }
+  lightbox.addEventListener('click', e => { if (e.target === lightbox || e.target === lightboxImg) closeLightbox(); });
+  document.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+
+</body>
+</html>
