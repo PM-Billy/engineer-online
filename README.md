@@ -28,8 +28,13 @@ engineer-online/
 │   │   ├── 05.08-回答管理（管理后台）.md        [平台层] 回答审核/推送
 │   │   └── 05.09-用户管理（管理后台）.md        [平台层] 用户管理/官方号设置
 │   ├── 多语言文本.md                    用户端中/英/泰 + 后台中/英 UI 文本字典
-│   ├── 功能结构.md                      功能结构权威源
-│   └── demo/                           原型演示（HTML）
+│   └── 功能结构.md                      功能结构权威源
+│
+├── demo/                              ← 评审 HTML 与原型 Demo（可分享）
+│   ├── index.html                      Demo Hub 入口页
+│   ├── spec-review-2026-05-16.html     最新需求评审 HTML（10 章节）
+│   ├── app.html                        移动端 App Demo
+│   └── admin.html                      运营管理后台 Demo
 │
 ├── standard/                          ← 组织级规范（L1，跨项目复用，按年变化）
 │   ├── 技术架构.md                      技术架构与编码规范
@@ -56,6 +61,7 @@ engineer-online/
 │   ├── architecture/                   架构图
 │   ├── prototype/                      UI 原型截图
 │   ├── flowchart/                      业务/页面流程图
+│   ├── templates/                      评审 HTML 模板（spec-review.html）
 │   └── ui-spec/                        UI 规范图
 │
 ├── spec-index.yaml                    ← 机器可读索引（AI 友好）
