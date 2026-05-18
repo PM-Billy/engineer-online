@@ -6,6 +6,23 @@
 
 ---
 
+## [2.5.0] - 2026-05-18
+
+> 媒体字段结构化升级。视频从 URL 字符串升级为含封面/时长的结构化对象，列表页和详情页均支持图片+视频混排显示。DTO 统一为 `MediaItem[]`，消除跨文档字段不一致。
+
+### Added
+- **`design/数据模型.md`** — `videos` 字段从 `string[]` 升级为结构化对象 `[{url, coverUrl, duration}]`（Question 表 + Answer 表）
+- **`standard/技术架构.md`** — 新增 §6.4「媒体处理」规范：所有媒体统一提供 `coverUrl` 作为缩略图；缩略图由客户端生成（450×450px 居中裁剪，质量 75%），原图压缩由客户端完成（长边 ≤ 1200px，质量 80%）
+- **`requirement/modules/05.03-问题发布.md`** — `upload/confirm` 响应更新为不返回 `coverUrl`（缩略图由客户端单独上传并自行管理 URL）
+
+### Changed
+- **`design/数据模型.md`** — Question 表 / Answer 表：`images` + `videos` → 合并为单个 `media` JSON 字段，保留用户上传混排顺序
+- **`requirement/modules/05.03-问题发布.md`** — `QuestionCreateDTO.mediaUrls: string[]` → `media: MediaItem[]`；`coverUrl` 为所有媒体必填（缩略图由客户端生成并单独上传）；上传流程更新为每份媒体需两次 presign+confirm（原文件+缩略图）；API 契约同步更新
+- **`requirement/modules/05.04-问题详情.md`** — `QuestionDetailVO` / `AnswerVO` / `AnswerCreateDTO` 统一使用 `MediaItem[]` 混排；`coverUrl` 统一为缩略图；删除分离的 `images` + `videos`
+- **`requirement/modules/05.02-圈子首页.md`** — `QuestionListVO.images: string[]` → `mediaPreview: MediaPreview[]`，列表缩略图统一使用 `coverUrl`；缩略图规则从「最多3张图片」扩展为「最多3个媒体（图片/视频封面混排）」；Question 数据对象 `images` + `videos` → `media: MediaItem[]`
+
+---
+
 ## [2.4.0] - 2026-05-18
 
 > 文档一致性治理。两轮系统性审查修复 19 处跨文档不一致，统一错误码体系、数据模型字段名、枚举值、API 契约、权限码注册表、i18n 字典。

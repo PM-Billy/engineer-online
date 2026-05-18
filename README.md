@@ -2,7 +2,7 @@
 
 > **用途**：本文档集作为标准化的 Spec Coding 需求输入，包含完整的 PRD、技术架构、UI 规范、任务清单与可复用的角色 Skill 模板。
 > **目标**：让 AI 编码助手能精确理解需求并生成高质量代码；让产品经理输出结构统一的 PRD；让开发者快速理解需求并进入 spec coding。
-> **版本**：2.4.0（详见 [CHANGELOG.md](CHANGELOG.md)）
+> **版本**：2.5.0（详见 [CHANGELOG.md](CHANGELOG.md)）
 > **维护人**：Billy
 
 ---
