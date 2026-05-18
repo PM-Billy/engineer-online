@@ -6,6 +6,46 @@
 
 ---
 
+## [2.4.0] - 2026-05-18
+
+> 文档一致性治理。两轮系统性审查修复 19 处跨文档不一致，统一错误码体系、数据模型字段名、枚举值、API 契约、权限码注册表、i18n 字典。
+
+### Added
+- **`design/数据模型.md`** — Question 表新增 `videos` JSON 列；Group 表新增 `content_count`、`reply_count` 冗余计数列
+- **`requirement/modules/05.04-问题详情.md`** — 新增 EX-5.4-04「重复采纳」（闭环幽灵引用）
+- **`standard/技术架构.md`** — 新增 §11.3「外部依赖 SLA 与降级策略」（UOP / Google Translate / FCM / OSS 超时/重试/降级规则）
+- **`requirement/多语言文本.md`** — 新增 27 个后台管理 i18n key（admin.question.* / admin.answer.* / time.relative / common.btn_close）
+- **`design/错误码.md`** — 新增 `2008 OFFICIAL_NAME_NOT_FOUND`
+
+### Changed
+- **`design/错误码.md`** — 重构为模块制错误码体系（1xxx 通用 / 2xxx 认证 / 3xxx 圈子 / 4xxx 问题 / 5xxx 回答 / 6xxx 审核 / 7xxx 通知 / 8xxx 文件 / 9xxx 系统），共 40 个码
+- **`design/数据模型.md`** — 枚举值对齐 PRD：Vote `UPVOTE`/`DOWNVOTE`、Notification `SYSTEM_MESSAGE`、AuditLog `action_type` 以 PRD 词汇为准（`APPROVE`/`REJECT`/`DELETE`/`HOT`/`SET_PUBLIC`...）
+- **`design/数据模型.md`** — `cover_url` / `mileage` 标注 PRD/API 映射关系；Group `type` 说明追加预留值
+- **`requirement/modules/05.02-圈子首页.md`** — Question 状态机修正：`is_public` 初始 false，Approved 后需 UOP 回传或管理员操作才对外可见；删除 Rejected → Deleted「系统清理」自动边
+- **`requirement/modules/05.03~05.04`** — media 字段统一为 `mediaUrls`，API 输入层统一，后端按类型拆分 `images`/`videos`
+- **`requirement/modules/05.07-问题管理（管理后台）.md`** — hide → public 语义统一（`is_public` 布尔控制）
+- **`requirement/modules/05.07/05.08/05.09`** — 管理后台 front matter `permission_codes` 清空，标注走 `@SaCheckRole("ADMIN")` 鉴权
+- **`standard/技术架构.md`** — API summary 补 `/api/v1` 前缀；删除未声明的 `PUT /questions/{id}`；`votes` → `vote`
+- **`tasks/追溯矩阵.csv`** — 删除 BR-5.2-05~09 重复行；所有 admin API 路径补 `/api/v1` 前缀；`hide` → `public` 路径修正
+- **`requirement/modules/05.02/05.04`** — `relativeTime: string` 改为 `createdAt: string`，前端基于 ISO 8601 实时计算相对时间
+- **`tasks/任务清单.md`** — front matter `total_tasks: 87` → `88`
+- **`README.md`** — 版本号 2.3.0 → 2.4.0；OQ 统计 9 关闭 → 8 关闭；EX 40 → 41
+
+### Fixed
+- 错误码 4003 描述矛盾（>200 → >400 字符，与 BR-5.3-01 对齐）
+- 幽灵字段 `publishableTypes` / `postSettings` 从 5.01 PRD 和 i18n 字典删除
+- BR-5.2-03 与 BR-5.2-10 重复编号（原 5.2-03「千分号格式化」重命名为 5.2-10）
+- front matter `apis:` 与 §5.x.10 API 契约表不一致（5.04/5.06/5.07/5.08/5.09 补齐/删除）
+- 软删除字段统一：`is_deleted`（MyBatis Plus 逻辑删除）+ `deleted_at`（审计时间）双字段，数据模型和 PRD 同步
+- `sync_to_uop_status` 4 状态枚举统一（NOT_SYNCED/SYNCED/SYNC_FAILED/UPDATE_FAILED）
+- 追溯矩阵.csv 中 `GET /admin/questions/{id}/replies` → `/answers` 名词对齐
+
+### Removed
+- **`requirement/多语言文本.md`** — 删除 `time.relative` key（由 `time.minutes_ago` / `time.hours_ago` / `time.days_ago` 颗粒化 key 前端组合渲染）
+- **`design/错误码.md`** — 删除废弃错误码 `CANNOT_DELETE_ACCEPTED`（已合并到业务规则描述）
+
+---
+
 ## [2.3.0] - 2026-05-13
 
 > 全面评估 + 阶段 1-4 优化 + Skills 体系 + 需求冲突修复 + prompts 删除 + "AI Coding" → "Spec Coding"

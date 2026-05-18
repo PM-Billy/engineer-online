@@ -3,21 +3,22 @@
 # 维护规则：新增 BR 时在本文件追加一行；已废弃 BR 不在此文件出现（见各模块 PRD §5.x.4 编号连续性说明）
 # 已废弃（保留说明）：BR-5.6-06（v1.3.3 清空功能下线）、BR-5.7-05/06（v1.4.0 代发/发表问题下线）
 br_id,module,description,related_ex,related_ac,impl_tasks,test_task,api,notes
-BR-5.1-01,5.1,名称唯一,EX-5.1-01,AC-5.1-04,GROUP-02;GROUP-05,TEST-03,POST /admin/groups,DB 唯一索引 uk_group_name
-BR-5.1-02,5.1,类型不可改,-,-,GROUP-02,TEST-03,PUT /admin/groups/{id},Service 层校验
-BR-5.1-03,5.1,停用保留内容,-,AC-5.1-02,GROUP-02;GROUP-04;GROUP-05;GROUP-06,TEST-03,PUT /admin/groups/{id}/status,状态机 Enabled→Disabled；缓存失效
-BR-5.1-04,5.1,删除二次确认,EX-5.1-02,AC-5.1-05,GROUP-05,TEST-03,DELETE /admin/groups/{id},前端确认 + 后端校验
+BR-5.1-01,5.1,名称唯一,EX-5.1-01,AC-5.1-04,GROUP-02;GROUP-05,TEST-03,POST /api/v1/admin/groups,DB 唯一索引 uk_group_name
+BR-5.1-02,5.1,类型不可改,-,-,GROUP-02,TEST-03,PUT /api/v1/admin/groups/{id},Service 层校验
+BR-5.1-03,5.1,停用保留内容,-,AC-5.1-02,GROUP-02;GROUP-04;GROUP-05;GROUP-06,TEST-03,PUT /api/v1/admin/groups/{id}/status,状态机 Enabled→Disabled；缓存失效
+BR-5.1-04,5.1,删除二次确认,EX-5.1-02,AC-5.1-05,GROUP-05,TEST-03,DELETE /api/v1/admin/groups/{id},前端确认 + 后端校验
 BR-5.1-05,5.1,排序字段,-,-,GROUP-02,TEST-03,-,sort_order DESC
-BR-5.1-06,5.1,多语言至少一种,-,AC-5.1-03,GROUP-03;GROUP-05,TEST-06,POST /admin/groups,DTO 校验；i18n 测试
+BR-5.1-06,5.1,多语言至少一种,-,AC-5.1-03,GROUP-03;GROUP-05,TEST-06,POST /api/v1/admin/groups,DTO 校验；i18n 测试
 BR-5.2-01,5.2,仅显示审核通过,-,AC-5.2-01,QLIST-02;QLIST-04;QLIST-05,TEST-01,GET /groups/{id}/questions,WHERE review_status='APPROVED'
 BR-5.2-02,5.2,回答预览优先级,-,AC-5.2-03,QLIST-04;QLIST-06,TEST-01,GET /groups/{id}/questions,Service 层 buildPreview
-BR-5.2-03,5.2,数字千分号格式化,-,-,QLIST-08,TEST-01,-,utils/format.ts
+BR-5.2-03,5.2,问题卡片图片最多3张缩略图,-,-,QLIST-04,TEST-01,-,UI 层截断显示
 BR-5.2-04,5.2,相对时间,-,AC-5.2-07,QLIST-04;QLIST-07,TEST-01,-,utils/format.ts；GR-TIME-01
 BR-5.2-05,5.2,My Question 需登录,-,AC-5.2-04,QLIST-02;QLIST-04,TEST-01,GET /groups/{id}/questions?tab=my,@SaCheckLogin
 BR-5.2-06,5.2,无限滚动 20 条,EX-5.2-03,-,QLIST-04,TEST-01,GET /groups/{id}/questions,cursor 分页
 BR-5.2-07,5.2,访问权限提示,EX-5.2-01,-,QLIST-02,TEST-01,GET /groups/{id},读 group.access_roles
 BR-5.2-08,5.2,最新回答展示,-,AC-5.2-03,QLIST-04;QLIST-06,TEST-01,GET /groups/{id}/questions,同 BR-5.2-02 实现
 BR-5.2-09,5.2,提问按钮权限检查,-,-,QLIST-02,TEST-01,-,读 group.post_roles + 弹窗
+BR-5.2-10,5.2,数字千分号格式化,-,-,QLIST-08,TEST-01,-,utils/format.ts
 BR-5.3-01,5.3,标题 5-400 字符,EX-5.3-01;EX-5.3-02,AC-5.3-05,QPOST-01;QPOST-02,TEST-01,POST /groups/{id}/questions,DTO @Size(min=5 max=400)
 BR-5.3-02,5.3,描述选填 ≤10000 字符,EX-5.3-11,AC-5.3-01,QPOST-01;QPOST-02;QPOST-06,TEST-01,POST /groups/{id}/questions,DTO @Size(max=10000)
 BR-5.3-03,5.3,图片 ≤9 张 ≤5MB,EX-5.3-03;EX-5.3-05,AC-5.3-03;AC-5.3-06,QPOST-01;QPOST-03,TEST-01,POST /upload/presign,前端校验 + 后端校验
@@ -62,32 +63,32 @@ BR-5.6-02,5.6,未读红点,-,AC-5.6-01,NOTIFY-04,TEST-01,-,UI is_read 状态
 BR-5.6-03,5.6,点击标记已读,-,AC-5.6-02,NOTIFY-03;NOTIFY-04,TEST-01,PUT /notifications/{id}/read,-
 BR-5.6-04,5.6,时间倒序,-,-,NOTIFY-03,TEST-01,GET /notifications,ORDER BY created_at DESC
 BR-5.6-05,5.6,模板填充,-,-,NOTIFY-02,TEST-02,-,后端 fillTemplate
-BR-5.7-01,5.7,时间倒序 + 排序序号,EX-5.7-04,AC-5.7-08,QM-01;QM-04,TEST-03,GET /admin/questions,ORDER BY sort_order ASC created_at DESC
-BR-5.7-02,5.7,手机/邮箱脱敏,-,-,QM-01,TEST-05,GET /admin/questions,maskPhone/maskEmail
-BR-5.7-03,5.7,热门标记,-,AC-5.7-04,QM-03;QM-04,TEST-03,PUT /admin/questions/{id}/hot,is_hot 字段
-BR-5.7-04,5.7,隐藏,-,-,QM-03;QM-04,TEST-03,PUT /admin/questions/{id}/hide,is_hidden 字段
-BR-5.7-07,5.7,驳回原因必填,-,AC-5.7-03,QM-04;QM-05,TEST-03,POST /admin/questions/{id}/audit,DTO @NotBlank
+BR-5.7-01,5.7,时间倒序 + 排序序号,EX-5.7-04,AC-5.7-08,QM-01;QM-04,TEST-03,GET /api/v1/admin/questions,ORDER BY sort_order ASC created_at DESC
+BR-5.7-02,5.7,手机/邮箱脱敏,-,-,QM-01,TEST-05,GET /api/v1/admin/questions,maskPhone/maskEmail
+BR-5.7-03,5.7,热门标记,-,AC-5.7-04,QM-03;QM-04,TEST-03,PUT /api/v1/admin/questions/{id}/hot,is_hot 字段
+BR-5.7-04,5.7,隐藏,-,-,QM-03;QM-04,TEST-03,PUT /api/v1/admin/questions/{id}/hide,is_hidden 字段
+BR-5.7-07,5.7,驳回原因必填,-,AC-5.7-03,QM-04;QM-05,TEST-03,POST /api/v1/admin/questions/{id}/audit,DTO @NotBlank
 BR-5.7-08,5.7,操作日志,-,AC-5.7-14,QM-02;QM-03;AUDIT-05,TEST-03,-,AuditLog 表
-BR-5.7-09,5.7,批量 ≤100,EX-5.7-02,AC-5.7-07;AC-5.7-13,QM-02;QM-05;AM-02,TEST-03,POST /admin/questions/audit,DTO @Size(max=100)
-BR-5.7-10,5.7,删除二次确认,-,-,QM-04,TEST-03,DELETE /admin/questions/{id},前端 confirm
-BR-5.7-11,5.7,推送到 UOP,EX-5.7-03,AC-5.7-09,QM-03;QM-04,TEST-03,POST /admin/questions/{id}/push-uop,MQ 异步 + 状态回写
-BR-5.7-12,5.7,查看回复弹窗批量审核,EX-5.7-05,AC-5.7-06;AC-5.7-07,QM-02;QM-05;AM-02,TEST-03,POST /admin/answers/audit,复用回答审核 API
-BR-5.7-13,5.7,父回答 ID 规则,-,AC-5.7-15,QM-01;QM-05,TEST-02,GET /admin/questions/{id}/replies,一级=NULL 二级=被回复回答 ID
-BR-5.8-01,5.8,时间倒序,-,-,AM-01,TEST-03,GET /admin/answers,-
-BR-5.8-02,5.8,官方号自动同步 UOP,-,AC-5.8-01;AC-5.8-06,AM-02;AM-05,TEST-03,POST /admin/answers/{id}/audit,Service 触发 MQ
-BR-5.8-03,5.8,同步失败重同步,EX-5.8-01,AC-5.8-03,AM-03;AM-05,TEST-03,POST /admin/answers/{id}/resync,-
-BR-5.8-04,5.8,已采纳不可删,EX-5.8-02,AC-5.8-04,AM-02,TEST-03,DELETE /admin/answers/{id},Service 校验
-BR-5.8-05,5.8,身份区分,-,-,AM-01,TEST-03,GET /admin/answers,author_type 字段
-BR-5.8-06,5.8,驳回原因必填,-,AC-5.8-02,AM-02;AM-05,TEST-03,POST /admin/answers/{id}/audit,DTO @NotBlank
+BR-5.7-09,5.7,批量 ≤100,EX-5.7-02,AC-5.7-07;AC-5.7-13,QM-02;QM-05;AM-02,TEST-03,POST /api/v1/admin/questions/audit,DTO @Size(max=100)
+BR-5.7-10,5.7,删除二次确认,-,-,QM-04,TEST-03,DELETE /api/v1/admin/questions/{id},前端 confirm
+BR-5.7-11,5.7,推送到 UOP,EX-5.7-03,AC-5.7-09,QM-03;QM-04,TEST-03,POST /api/v1/admin/questions/{id}/push-uop,MQ 异步 + 状态回写
+BR-5.7-12,5.7,查看回复弹窗批量审核,EX-5.7-05,AC-5.7-06;AC-5.7-07,QM-02;QM-05;AM-02,TEST-03,POST /api/v1/admin/answers/audit,复用回答审核 API
+BR-5.7-13,5.7,父回答 ID 规则,-,AC-5.7-15,QM-01;QM-05,TEST-02,GET /api/v1/admin/questions/{id}/replies,一级=NULL 二级=被回复回答 ID
+BR-5.8-01,5.8,时间倒序,-,-,AM-01,TEST-03,GET /api/v1/admin/answers,-
+BR-5.8-02,5.8,官方号自动同步 UOP,-,AC-5.8-01;AC-5.8-06,AM-02;AM-05,TEST-03,POST /api/v1/admin/answers/{id}/audit,Service 触发 MQ
+BR-5.8-03,5.8,同步失败重同步,EX-5.8-01,AC-5.8-03,AM-03;AM-05,TEST-03,POST /api/v1/admin/answers/{id}/resync,-
+BR-5.8-04,5.8,已采纳不可删,EX-5.8-02,AC-5.8-04,AM-02,TEST-03,DELETE /api/v1/admin/answers/{id},Service 校验
+BR-5.8-05,5.8,身份区分,-,-,AM-01,TEST-03,GET /api/v1/admin/answers,author_type 字段
+BR-5.8-06,5.8,驳回原因必填,-,AC-5.8-02,AM-02;AM-05,TEST-03,POST /api/v1/admin/answers/{id}/audit,DTO @NotBlank
 BR-5.8-07,5.8,操作日志,-,-,AM-02,TEST-03,-,AuditLog
-BR-5.8-08,5.8,批量 ≤100,EX-5.8-04,AC-5.8-07,AM-02,TEST-03,POST /admin/answers/audit,DTO @Size(max=100)
-BR-5.8-09,5.8,删除二次确认,-,-,AM-04,TEST-03,DELETE /admin/answers/{id},前端
-BR-5.8-10,5.8,脱敏,-,-,AM-01,TEST-05,GET /admin/answers,maskPhone
-BR-5.9-01,5.9,注册时间倒序,-,-,USER-01,TEST-03,GET /admin/users,ORDER BY created_at DESC
-BR-5.9-02,5.9,官方号名称读字典,EX-5.9-01,AC-5.9-01;AC-5.9-04,USER-01;USER-04,TEST-03,PUT /admin/users/{id}/official,字典 OfficialAccountName
-BR-5.9-03,5.9,设官方号必选名称,-,AC-5.9-02,USER-03;USER-04,TEST-03,PUT /admin/users/{id}/official,DTO @NotBlank
-BR-5.9-04,5.9,取消官方号二次确认,EX-5.9-03,AC-5.9-05,USER-03;USER-04,TEST-03,DELETE /admin/users/{id}/official,前端 confirm
-BR-5.9-05,5.9,UOP 同步官方号,EX-5.9-02,AC-5.9-03,USER-01;USER-03,TEST-03,POST /admin/users/sync-official,自动关联名称
+BR-5.8-08,5.8,批量 ≤100,EX-5.8-04,AC-5.8-07,AM-02,TEST-03,POST /api/v1/admin/answers/audit,DTO @Size(max=100)
+BR-5.8-09,5.8,删除二次确认,-,-,AM-04,TEST-03,DELETE /api/v1/admin/answers/{id},前端
+BR-5.8-10,5.8,脱敏,-,-,AM-01,TEST-05,GET /api/v1/admin/answers,maskPhone
+BR-5.9-01,5.9,注册时间倒序,-,-,USER-01,TEST-03,GET /api/v1/admin/users,ORDER BY created_at DESC
+BR-5.9-02,5.9,官方号名称读字典,EX-5.9-01,AC-5.9-01;AC-5.9-04,USER-01;USER-04,TEST-03,PUT /api/v1/admin/users/{id}/official,字典 OfficialAccountName
+BR-5.9-03,5.9,设官方号必选名称,-,AC-5.9-02,USER-03;USER-04,TEST-03,PUT /api/v1/admin/users/{id}/official,DTO @NotBlank
+BR-5.9-04,5.9,取消官方号二次确认,EX-5.9-03,AC-5.9-05,USER-03;USER-04,TEST-03,DELETE /api/v1/admin/users/{id}/official,前端 confirm
+BR-5.9-05,5.9,UOP 同步官方号,EX-5.9-02,AC-5.9-03,USER-01;USER-03,TEST-03,POST /api/v1/admin/users/sync-official,自动关联名称
 BR-5.9-06,5.9,身份变更同步内容,-,AC-5.9-05,USER-03;USER-04,TEST-03,-,历史内容标识同步更新
 BR-5.9-07,5.9,操作日志,-,-,USER-03;USER-04,TEST-03,-,AuditLog 表
-BR-5.9-08,5.9,手机/邮箱脱敏,-,-,USER-01,TEST-05,GET /admin/users,maskPhone/maskEmail
+BR-5.9-08,5.9,手机/邮箱脱敏,-,-,USER-01,TEST-05,GET /api/v1/admin/users,maskPhone/maskEmail

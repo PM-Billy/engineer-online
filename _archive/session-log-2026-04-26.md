@@ -150,7 +150,7 @@ Claude 创建了 13 个任务并按 P0 → P1 → P2 顺序推进：
 将原来"复合状态机"拆为两个独立状态机：
 
 - **5.8.7.1 审核状态机（review_status）**：Pending → Approved / Rejected → Deleted
-- **5.8.7.2 推送状态机（push_status）**：仅官方号回答；NotPushed → Pushed / PushFailed → Pushed
+- **5.8.7.2 推送状态机（push_status）**：NotPushed → Pushed / PushFailed → Pushed
 - **5.8.7.3 状态组合矩阵**：6 行表格穷举合法组合（含可见性、是否通知）
 
 #### 2.3.3 各 5.x 文件 front matter 添加

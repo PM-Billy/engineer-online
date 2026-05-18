@@ -2,7 +2,7 @@
 
 > **用途**：本文档集作为标准化的 Spec Coding 需求输入，包含完整的 PRD、技术架构、UI 规范、任务清单与可复用的角色 Skill 模板。
 > **目标**：让 AI 编码助手能精确理解需求并生成高质量代码；让产品经理输出结构统一的 PRD；让开发者快速理解需求并进入 spec coding。
-> **版本**：2.3.0（详见 [CHANGELOG.md](CHANGELOG.md)）
+> **版本**：2.4.0（详见 [CHANGELOG.md](CHANGELOG.md)）
 > **维护人**：Billy
 
 ---
@@ -249,14 +249,14 @@ layer: "engineer-online"
 | 指标 | 数值 |
 |------|------|
 | 功能模块数 | 9 个 |
-| 业务规则总数 | 88 条 |
-| 异常处理场景 | 40 条 |
+| 业务规则总数 | 89 条 |
+| 异常处理场景 | 41 条 |
 | 验收标准总数 | 63 条 |
 | Permission Code | 19 条 |
 | 数据实体 | 7 个（Group, GroupTranslation, Question, Answer, Vote, Notification, AuditLog） |
 | i18n key | ~150 条（用户端 zh/en/th，后台 zh/en） |
 | 开发任务数 | 87 个 |
-| 待确认事项 | 9 关闭 / 1 推迟 / 1 待讨论 |
+| 待确认事项 | 8 关闭 / 1 推迟 / 1 待讨论 |
 
 ### 客户端实现技术分布
 
