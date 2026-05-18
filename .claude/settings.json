@@ -6,6 +6,7 @@
     "backend-dev",
     "db-design",
     "test-qa",
-    "spec-writer"
+    "spec-writer",
+    "spec-review"
   ]
 }

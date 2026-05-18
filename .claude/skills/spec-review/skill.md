@@ -9,9 +9,9 @@ type: custom
 
 ## 触发方式
 
-- `#spec-review 生成本次评审 HTML`
-- `#spec-review 为模块 {模块号} 生成评审 HTML`
-- `#spec-review 增量更新本次评审 HTML`
+- `/spec-review 生成本次评审 HTML`
+- `/spec-review 为模块 {模块号} 生成评审 HTML`
+- `/spec-review 增量更新本次评审 HTML`
 
 ## 设计哲学
 
@@ -537,7 +537,7 @@ Given/When/Then 用粗体强调。
 | 模板源 | 不允许就地修改 `asset/templates/spec-review.html`，复制后再填 |
 | CSS/JS | 完全保留模板的 `<style>` 和 `<script>` |
 | 数据来源 | 仅来自 spec 文档，禁止编造 |
-| 图片路径 | HTML 在 `demo/` 中，引用 asset 用 `../asset/...`（指向仓库根的 `asset/`）。**不要**复制图片副本到 demo 目录下 |
+| 图片路径 | HTML 在 `demo/` 中，引用 asset目录下的图片，**不要**用绝对路径或相对路径回退到项目根 |
 | 输出位置 | `demo/spec-review-{YYYY-MM-DD}.html` |
 | doc lint | 完成后项目 lint 必须通过 |
 
