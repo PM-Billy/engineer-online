@@ -32,7 +32,7 @@ engineer-online/
 │
 ├── demo/                              ← 评审 HTML 与原型 Demo（可分享）
 │   ├── index.html                      Demo Hub 入口页
-│   ├── spec-review-2026-05-16.html     最新需求评审 HTML（10 章节）
+│   ├── spec-review-2026-05-15.html     最新需求评审 HTML（10 章节）
 │   ├── app.html                        移动端 App Demo
 │   └── admin.html                      运营管理后台 Demo
 │
