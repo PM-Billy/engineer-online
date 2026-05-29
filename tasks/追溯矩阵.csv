@@ -76,7 +76,7 @@ BR-5.7-12,5.7,查看回复弹窗批量审核,EX-5.7-05,AC-5.7-06;AC-5.7-07,QM-02
 BR-5.7-13,5.7,父回答 ID 规则,-,AC-5.7-15,QM-01;QM-05,TEST-02,GET /api/v1/admin/questions/{id}/replies,一级=NULL 二级=被回复回答 ID
 BR-5.8-01,5.8,时间倒序,-,-,AM-01,TEST-03,GET /api/v1/admin/answers,-
 BR-5.8-02,5.8,官方号自动同步 UOP,-,AC-5.8-01;AC-5.8-06,AM-02;AM-05,TEST-03,POST /api/v1/admin/answers/{id}/audit,Service 触发 MQ
-BR-5.8-03,5.8,同步失败重同步,EX-5.8-01,AC-5.8-03,AM-03;AM-05,TEST-03,POST /api/v1/admin/answers/{id}/resync,-
+BR-5.8-03,5.8,同步失败重推 UOP,EX-5.8-01,AC-5.8-03,AM-03;AM-05,TEST-03,POST /api/v1/admin/answers/{id}/push-uop,-
 BR-5.8-04,5.8,已采纳不可删,EX-5.8-02,AC-5.8-04,AM-02,TEST-03,DELETE /api/v1/admin/answers/{id},Service 校验
 BR-5.8-05,5.8,身份区分,-,-,AM-01,TEST-03,GET /api/v1/admin/answers,author_type 字段
 BR-5.8-06,5.8,驳回原因必填,-,AC-5.8-02,AM-02;AM-05,TEST-03,POST /api/v1/admin/answers/{id}/audit,DTO @NotBlank
